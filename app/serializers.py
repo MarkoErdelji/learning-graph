@@ -1,12 +1,8 @@
 # your_app_name/serializers.py
 from rest_framework import serializers
-from .models import Book,AppUser
+from .models import AppUser, KnowledgeGraph, GraphNode, Question
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-class BookSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Book
-        fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -34,3 +30,20 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         else:
             token['user_type'] = 'admin'
         return token
+    
+class KnowledgeGraphSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KnowledgeGraph
+        fields = ['id', 'title', 'created_by']
+
+class GraphNodeSerializer(serializers.ModelSerializer):
+    prerequisite_nodes = serializers.PrimaryKeyRelatedField(many=True, queryset=GraphNode.objects.all())
+
+    class Meta:
+        model = GraphNode
+        fields = ['id', 'graph', 'title', 'prerequisite_nodes', 'dependent_nodes']
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ['id', 'node', 'text', 'correct_answer', 'other_answers']

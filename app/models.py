@@ -1,16 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
-class Book(models.Model):
-    title = models.CharField(max_length=100)
-    author = models.CharField(max_length=100)
-    published_date = models.DateField()
-
-    def __str__(self):
-        return self.title
-
-
-
 class AppUser(AbstractUser):
 
     USER_TYPE_CHOICES = [
@@ -43,3 +33,27 @@ class AppUser(AbstractUser):
         help_text='Specific permissions for this user.',
         verbose_name='user permissions'
     )
+
+class KnowledgeGraph(models.Model):
+    title = models.CharField(max_length=255)
+    created_by = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='created_graphs')
+
+    def __str__(self):
+        return self.title
+
+class GraphNode(models.Model):
+    graph = models.ForeignKey(KnowledgeGraph, on_delete=models.CASCADE, related_name='nodes')
+    title = models.CharField(max_length=255)
+    prerequisite_nodes = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='dependent_nodes')
+
+    def __str__(self):
+        return f"{self.title} (Graph: {self.graph.title})"
+
+class Question(models.Model):
+    node = models.ForeignKey(GraphNode, on_delete=models.CASCADE, related_name='questions')
+    text = models.CharField(max_length=255)
+    correct_answer = models.CharField(max_length=255)
+    other_answers = models.JSONField()  # Stores other answers as a list in JSON format
+
+    def __str__(self):
+        return f"Question on {self.node.title}: {self.text}"
