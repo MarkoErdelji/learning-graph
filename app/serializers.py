@@ -33,7 +33,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ['id', 'text', 'correct_answer', 'other_answers']
+        fields = ['id', 'text', 'correct_answer', 'other_answers', 'node']  
+
+    node = serializers.PrimaryKeyRelatedField(queryset=GraphNode.objects.all()) 
 
 
 class GraphNodeSerializer(serializers.ModelSerializer):

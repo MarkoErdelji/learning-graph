@@ -10,6 +10,33 @@ SECRET_KEY = 'django-insecure-ot+@*xi0tktc^l^hd5cc0vdgfnvet#!t4(fn@y0azr2i1_%y8r
 DEBUG = True
 ALLOWED_HOSTS = ['*']  # Allow all hosts in development; restrict in production
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # Set to DEBUG to see all logs
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Log Django-specific logs
+            'propagate': True,
+        },
+        'app': {  # Replace 'your_app_name' with your app's name
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

@@ -13,7 +13,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.decorators import action
-
+import logging
+logger = logging.getLogger(__name__)
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -89,11 +90,78 @@ class GraphNodeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except GraphNode.DoesNotExist:
             return Response({"error": "Node not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True, methods=['patch'])
+    def update_with_prerequisites(self, request, pk=None):
+        logger.debug(f"Request data: {request.data}")
+        target_node = get_object_or_404(GraphNode, pk=pk)
+        logger.debug(f"Target node: {target_node}")
 
+        prerequisite_node_ids = request.data.get("prerequisite_node_ids", [])
+        logger.debug(f"Prerequisite IDs: {prerequisite_node_ids}")
+
+        if not isinstance(prerequisite_node_ids, list):
+            logger.error("prerequisite_node_ids is not a list")
+            return Response(
+                {"error": "prerequisite_node_ids must be a list of IDs."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        prerequisite_nodes = GraphNode.objects.filter(id__in=prerequisite_node_ids)
+        logger.debug(f"Found prerequisite nodes: {list(prerequisite_nodes)}")
+
+        if prerequisite_nodes.count() != len(prerequisite_node_ids):
+            logger.error("Some prerequisite nodes do not exist.")
+            return Response(
+                {"error": "Some prerequisite nodes do not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Add new prerequisites
+        target_node.prerequisite_nodes.add(*prerequisite_nodes)
+        logger.debug(f"Prerequisites after adding: {list(target_node.prerequisite_nodes.all())}")
+
+        # Update other fields if provided
+        title = request.data.get("title")
+        if title:
+            target_node.title = title
+
+        target_node.save()
+
+        return Response(
+            GraphNodeSerializer(target_node).data,
+            status=status.HTTP_200_OK
+        )
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+
+    @action(detail=True, methods=['patch'])
+    def update_question(self, request, pk=None):
+        """Update a question."""
+        question = get_object_or_404(Question, pk=pk)
+        text = request.data.get('text', None)
+        correct_answer = request.data.get('correct_answer', None)
+        other_answers = request.data.get('other_answers', None)
+
+        if text:
+            question.text = text
+        if correct_answer:
+            question.correct_answer = correct_answer
+        if other_answers is not None:
+            question.other_answers = other_answers
+
+        question.save()
+
+        return Response(QuestionSerializer(question).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['delete'])
+    def delete_question(self, request, pk=None):
+        """Delete a question."""
+        question = get_object_or_404(Question, pk=pk)
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FirstQuestionView(APIView):
@@ -149,7 +217,7 @@ class KnowledgeGraphDetailView(APIView):
                 link = {
                     "source": source_id,  # Use node ids, not indices
                     "target": target_id
-                }
+                }   
                 d3_data["links"].append(link)
 
         return Response(d3_data)
