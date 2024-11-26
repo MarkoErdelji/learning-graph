@@ -2,9 +2,9 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from ..views import (
-    CustomTokenObtainPairView, UserRegistrationView, TeacherView,
+    CustomTokenObtainPairView, TestAttemptView, TestListView, UserRegistrationView, TeacherView,
     KnowledgeGraphViewSet, GraphNodeViewSet, QuestionViewSet,
-    FirstQuestionView, KnowledgeGraphDetailView
+    FirstQuestionView, KnowledgeGraphDetailView,TestCreationView
 )
 
 urlpatterns = [
@@ -24,4 +24,8 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('teacheronly/', TeacherView.as_view(), name='teacher-only-view'),
     path('knowledge-graph/<int:pk>/', KnowledgeGraphDetailView.as_view(), name='knowledge-graph-detail'),
+    path('tests/', TestListView.as_view(), name='test-list'),
+    path('tests/<int:test_id>/attempt/', TestAttemptView.as_view(), name='test-attempt'),
+        path('tests/create_test/', TestCreationView.as_view(), name='create_test'),
+
 ]

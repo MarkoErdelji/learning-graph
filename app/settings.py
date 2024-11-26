@@ -24,11 +24,6 @@ LOGGING = {
         'level': 'DEBUG',  # Set to DEBUG to see all logs
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',  # Log Django-specific logs
-            'propagate': True,
-        },
         'app': {  # Replace 'your_app_name' with your app's name
             'handlers': ['console'],
             'level': 'DEBUG',

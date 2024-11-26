@@ -1,11 +1,12 @@
 # your_app_name/views.py
+from collections import deque
 import random
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, viewsets, status
-from .models import AppUser, KnowledgeGraph, GraphNode, Question
+from rest_framework import generics, viewsets, status, permissions
+from .models import AppUser, KnowledgeGraph, GraphNode, Question, Test, TestAttempt
 from .serializers import (
     CustomTokenObtainPairSerializer, UserSerializer,
-    KnowledgeGraphSerializer, GraphNodeSerializer, QuestionSerializer
+    KnowledgeGraphSerializer, GraphNodeSerializer, QuestionSerializer,TestSerializer, TestAttemptSerializer
 )
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsTeacher, IsExpert, IsStudent
@@ -117,11 +118,10 @@ class GraphNodeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Add new prerequisites
-        target_node.prerequisite_nodes.add(*prerequisite_nodes)
-        logger.debug(f"Prerequisites after adding: {list(target_node.prerequisite_nodes.all())}")
+        for prerequisite_node in prerequisite_nodes:
+            prerequisite_node.prerequisite_nodes.add(target_node)
+            logger.debug(f"Added {target_node} as prerequisite to {prerequisite_node}")
 
-        # Update other fields if provided
         title = request.data.get("title")
         if title:
             target_node.title = title
@@ -132,7 +132,7 @@ class GraphNodeViewSet(viewsets.ModelViewSet):
             GraphNodeSerializer(target_node).data,
             status=status.HTTP_200_OK
         )
-
+    
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
@@ -215,9 +215,119 @@ class KnowledgeGraphDetailView(APIView):
             for prerequisite_id in node_data['prerequisite_nodes']:
                 target_id = prerequisite_id  # This is the id of the prerequisite node
                 link = {
-                    "source": source_id,  # Use node ids, not indices
-                    "target": target_id
+                    "source": target_id,  # Use node ids, not indices
+                    "target": source_id
                 }   
                 d3_data["links"].append(link)
 
         return Response(d3_data)
+
+
+class TestListView(APIView):
+
+    def get(self, request):
+        tests = Test.objects.all()
+        serializer = TestSerializer(tests, many=True)
+        return Response(serializer.data)
+
+
+class TestCreationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        graph_id = request.data.get('graph_id')
+        question_ids = request.data.get('question_ids', [])
+        graph_id = int(graph_id)  
+        graph = get_object_or_404(KnowledgeGraph, pk=graph_id)
+
+        questions = Question.objects.filter(id__in=question_ids)
+        
+        node_depths = {}
+        
+        def calculate_node_depth(node, node_depths):
+            if node.id in node_depths:
+                return node_depths[node.id]
+
+            logger.debug(f"Calculating depth for node: {node.title} (ID: {node.id})")
+            logger.debug(f"Prerequisites: {[prereq.title for prereq in node.prerequisite_nodes.all()]}")
+
+            if node.prerequisite_nodes.count() == 0:
+                node_depths[node.id] = 0
+                logger.debug(f"Node {node.title} has no prerequisites. Depth = 0.")
+                return 0
+
+            # Initialize max_depth to a small value
+            max_depth = -1  # or you can use 0, depending on your requirement
+
+            for prerequisite in node.prerequisite_nodes.all():
+                prerequisite_depth = calculate_node_depth(prerequisite, node_depths)
+                logger.debug(f"Prerequisite {prerequisite.title} (ID: {prerequisite.id}) has depth {prerequisite_depth}.")
+                max_depth = max(max_depth, prerequisite_depth + 1)
+
+            node_depths[node.id] = max_depth
+            logger.debug(f"Node {node.title} has calculated depth {max_depth}.")
+            return max_depth
+
+        question_depths = {}
+        node_depths = {} 
+        for question in questions:
+            node = question.node
+            depth = calculate_node_depth(node, node_depths)
+            logger.debug(f"Node {node.title} (ID: {node.id}) has depth {depth}.")
+            question_depths[question] = depth
+
+        sorted_questions = sorted(question_depths.items(), key=lambda x: x[1])
+
+        test = Test.objects.create(
+            graph=graph,
+            title=f"Test for {graph.title}",
+            author=request.user
+        )
+
+        for question, _ in sorted_questions:
+            test.questions.add(question)
+
+        return Response({"test_id": test.id}, status=status.HTTP_201_CREATED)
+
+    def calculate_graph_depth(self, graph):
+        # This function calculates the depth for all nodes in the graph using BFS (starting from leaf nodes)
+        node_depths = {}
+
+        # Initialize a queue for BFS
+        queue = deque()
+
+        # Step 1: Identify leaf nodes (nodes without prerequisites) and start the BFS from them
+        for node in graph.nodes.all():
+            if node.prerequisite_nodes.count() == 0:
+                node_depths[node.id] = 0  # Leaf node has depth 0
+                queue.append(node)
+
+        # Step 2: Perform BFS to calculate depth for all nodes
+        while queue:
+            current_node = queue.popleft()
+            current_depth = node_depths[current_node.id]
+
+            # Traverse through the dependent nodes (reverse direction of prerequisites)
+            for dependent in current_node.dependent_nodes.all():
+                if dependent.id not in node_depths:  # If the dependent hasn't been visited
+                    node_depths[dependent.id] = current_depth + 1
+                    queue.append(dependent)
+
+        logger.debug(node_depths)
+        return node_depths
+    
+class TestAttemptView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, test_id):
+        test = Test.objects.get(id=test_id)
+        answers = request.data.get('answers', {})
+        attempt = TestAttempt.objects.create(
+            test=test,
+            student=request.user,
+            answers=answers,
+            completed=True
+        )
+        attempt.calculate_score()
+        serializer = TestAttemptSerializer(attempt)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
