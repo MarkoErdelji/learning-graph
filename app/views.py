@@ -317,17 +317,91 @@ class TestCreationView(APIView):
         return node_depths
     
 class TestAttemptView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def get(self, request, test_id):
+        test = get_object_or_404(Test, pk=test_id)
+        questions = test.questions.all()
+        serialized_questions = []
+
+        for question in questions:
+            all_answers = question.other_answers + [question.correct_answer]
+            random.shuffle(all_answers)
+
+            serialized_questions.append({
+                "id": question.id,
+                "text": question.text,
+                "answers": all_answers,  
+            })
+
+        return Response(serialized_questions)
 
     def post(self, request, test_id):
-        test = Test.objects.get(id=test_id)
-        answers = request.data.get('answers', {})
-        attempt = TestAttempt.objects.create(
+
+        test = get_object_or_404(Test, pk=test_id)
+
+        submitted_answers = request.data.get("answers", {})
+        if not isinstance(submitted_answers, dict):
+            return Response(
+                {"error": "Answers must be a dictionary with question IDs as keys and answers as values."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        correct_answers = {}
+        for question in test.questions.all():
+            user_answer = submitted_answers.get(str(question.id))
+            correct_answers[str(question.id)] = int(user_answer == question.correct_answer)
+
+        test_attempt = TestAttempt.objects.create(
             test=test,
             student=request.user,
-            answers=answers,
+            answers=correct_answers,
             completed=True
         )
-        attempt.calculate_score()
-        serializer = TestAttemptSerializer(attempt)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        test_attempt.calculate_score()
+
+        return Response({
+            "message": "Test submitted successfully.",
+            "score": test_attempt.score,
+            "total_questions": len(correct_answers),
+            "correct_answers": sum(correct_answers.values()),
+            "answers": correct_answers
+        }, status=status.HTTP_201_CREATED)
+    
+
+
+class TestAttemptsView(APIView):
+
+    def get(self, request, test_id):
+        test = get_object_or_404(Test, pk=test_id)
+        
+        graph = test.graph
+        
+        attempts = TestAttempt.objects.filter(test=test)
+        
+        result = []
+        
+        for attempt in attempts:
+            attempt_result = []
+            
+            for question_id, answer in attempt.answers.items():
+                question = get_object_or_404(Question, pk=question_id)
+                
+                node = question.node
+                
+                attempt_result.append({
+                    'node': node.id,  
+                    'answer': answer
+                })
+            
+            result.append(attempt_result)
+        
+        response_data = {
+            'graph': {
+                'id': graph.id,
+                'title': graph.title
+            },
+            'attempts': result
+        }
+        
+        return Response(response_data)
