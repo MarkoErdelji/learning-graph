@@ -81,7 +81,24 @@ class TestSerializer(serializers.ModelSerializer):
         model = Test
         fields = ['id', 'title', 'author_name', 'graph_name', 'questions']
 
+class TestGraphSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.username', read_only=True)
+    graph_name = serializers.CharField(source='graph.title', read_only=True)
+    graph_id = serializers.IntegerField(source='graph.id', read_only=True)
+
+    class Meta:
+        model = Test
+        fields = ['id', 'title', 'author_name', 'graph_name', 'graph_id']
+        
 class TestAttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestAttempt
         fields = ['id', 'test', 'student', 'answers', 'completed', 'score']
+
+class TestAttemptDetailSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.username', read_only=True)  # Include student's username
+    student_email = serializers.EmailField(source='student.email', read_only=True)  # Include student's email
+
+    class Meta:
+        model = TestAttempt
+        fields = ['student', 'student_name', 'student_email', 'score', 'id']

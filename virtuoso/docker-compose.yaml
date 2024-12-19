@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  virtuoso:
+    image: openlink/virtuoso-opensource-7
+    container_name: virtuoso
+    ports:
+      - "8890:8890"  
+      - "1111:1111" 
+    volumes:
+      - ./data:/data 
+      -  /c/Users/erdel/OneDrive/Desktop/DjangoApp/virtuoso/virtuoso.ini:/opt/virtuoso-opensource/database/virtuoso.ini
+    environment:
+      DBA_PASSWORD: "test"  # Set admin password
+      VIRTUOSO_HTTP_PORT: "8890"  # HTTP port
+    restart: unless-stopped

@@ -1,0 +1,864 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://lom.hpclab.ceid.upatras.gr/schema/"
+     xml:base="http://lom.hpclab.ceid.upatras.gr/schema/"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:LOM="http://ltsc.ieee.org/xsd/LOM/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <owl:Ontology rdf:about="http://lom.hpclab.ceid.upatras.gr/schema/">
+        <dc:date>2018-08-12</dc:date>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Οντολογία περιγραφής Μαθησιακών Αντικείμενων (Learning Objects)</rdfs:comment>
+        <dc:rights xml:lang="en">HPCLab, University of Patras</dc:rights>
+        <dc:description xml:lang="en">LOM Types Semantic Ontology Profile</dc:description>
+        <owl:versionInfo>0.2</owl:versionInfo>
+        <dc:creator xml:lang="en">Dimitrios Koutsomitropoulos</dc:creator>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/context -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/context">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">εκπαιδευτικόΠλαίσιο</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/contributor -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/contributor">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://purl.org/dc/terms/Agent"/>
+        <rdfs:label xml:lang="el">δημιουργός</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/difficulty -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/difficulty">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/Difficulty"/>
+        <rdfs:label xml:lang="el">επίπεδοΔυσκολίας</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/format -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/format">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/Format"/>
+        <rdfs:label xml:lang="el">μορφότυποςΑρχείου</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/intendedEndUserRole -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/intendedEndUserRole">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/IntendedEndUserRole"/>
+        <rdfs:label xml:lang="el">επιδιωκόμενοςΤελικόςΧρήστης</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/interactivityType -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/interactivityType">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/InteractivityType"/>
+        <rdfs:label xml:lang="el">τύποςΑλληλεπίδρασης</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/keyword -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/keyword">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <rdfs:label xml:lang="el">λέξηΚλειδί</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/learningResourceType -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/learningResourceType">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">μαθησιακόςΤύπος</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/relation -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/relation">
+        <owl:inverseOf rdf:resource="http://ltsc.ieee.org/xsd/LOM/relation"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:label xml:lang="el">συσχέτισηΜε</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/status -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/status">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/Status"/>
+        <rdfs:label xml:lang="el">κατάσταση</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/typicalLearningTime -->
+
+    <owl:ObjectProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/typicalLearningTime">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">τυπικόςΧρόνοςΜελέτης</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/description -->
+
+    <owl:DatatypeProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/description">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+        <rdfs:label xml:lang="el">περιγραφή</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/identifier -->
+
+    <owl:DatatypeProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/identifier">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
+        <rdfs:label xml:lang="el">αναγνωριστικό</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/language -->
+
+    <owl:DatatypeProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/language">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first>el</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first>en</rdf:first>
+                                <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
+        <rdfs:label xml:lang="el">γλώσσα</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/rights -->
+
+    <owl:DatatypeProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/rights">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:label xml:lang="el">πνευματικάΔικαιώματα</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/size -->
+
+    <owl:DatatypeProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/size">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+        <rdfs:label xml:lang="el">μέγεθος</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/title -->
+
+    <owl:DatatypeProperty rdf:about="http://ltsc.ieee.org/xsd/LOM/title">
+        <rdfs:domain rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningObject"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+        <rdfs:label xml:lang="el">τίτλος</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Context -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/Context">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">ΕκπαιδευτικόΠλαίσιο</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Difficulty -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/Difficulty">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">ΕπίπεδοΔυσκολίας</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Format -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/Format">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">ΜορφότυποςΑρχείου</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/IntendedEndUserRole -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/IntendedEndUserRole">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/terms/AgentClass"/>
+        <rdfs:label xml:lang="el">ΕπιδιωκόμενοςΤελικόςΧρήστης</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/InteractivityType -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/InteractivityType">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/terms/MethodOfInstruction"/>
+        <rdfs:label xml:lang="el">ΤύποςΑλληλεπίδρασης</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/LearningObject -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/LearningObject">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">ΜαθησιακόΑντικείμενο</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/LearningResourceType -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/LearningResourceType">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">ΜαθησιακόςΤύπος</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Status -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/Status">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">Κατάσταση</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime -->
+
+    <owl:Class rdf:about="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/terms/SizeOrDuration"/>
+        <rdfs:label xml:lang="el">ΤυπικόςΧρόνοςΜελέτης</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.org/dc/terms/Agent -->
+
+    <owl:Class rdf:about="http://purl.org/dc/terms/Agent">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label>Agent</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.org/dc/terms/AgentClass -->
+
+    <owl:Class rdf:about="http://purl.org/dc/terms/AgentClass"/>
+    
+
+
+    <!-- http://purl.org/dc/terms/MethodOfInstruction -->
+
+    <owl:Class rdf:about="http://purl.org/dc/terms/MethodOfInstruction">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">ΜέθοδοςΔιδασκαλίας</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.org/dc/terms/SizeOrDuration -->
+
+    <owl:Class rdf:about="http://purl.org/dc/terms/SizeOrDuration">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="el">ΜέγεθοςΉΔιάρκεια</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.w3.org/2002/07/owl#Thing -->
+
+    <owl:Class rdf:about="http://www.w3.org/2002/07/owl#Thing"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#Concept -->
+
+    <owl:Class rdf:about="http://www.w3.org/2004/02/skos/core#Concept">
+        <rdfs:label xml:lang="el">Έννοια</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Active -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Active">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/InteractivityType"/>
+        <rdfs:label xml:lang="el">Διαδραστικός</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Author -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Author">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/IntendedEndUserRole"/>
+        <rdfs:label xml:lang="el">Συγγραφέας</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Diagram -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Diagram">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Διάγραμμα</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Difficult -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Difficult">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Difficulty"/>
+        <rdfs:label xml:lang="el">Δύσκολο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Draft -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Draft">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Status"/>
+        <rdfs:label xml:lang="el">Πρόχειρο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Easy -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Easy">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Difficulty"/>
+        <rdfs:label xml:lang="el">Εύκολο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Exam -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Exam">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Εξέταση</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Exercise -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Exercise">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Άσκηση</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Experiment -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Experiment">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Πείραμα</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Expositive -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Expositive">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/InteractivityType"/>
+        <rdfs:label xml:lang="el">Επεξηγηματικός</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Fifth_Year -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Fifth_Year">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Πέμπτος_Χρόνος_Σπουδών</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Figure -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Figure">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Εικόνα</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Final -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Final">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Status"/>
+        <rdfs:label xml:lang="el">Τελικό</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/First_Year -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/First_Year">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Πρώτος_Χρόνος_Σπουδών</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Fourth_Year -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Fourth_Year">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Τέταρτος_Χρόνος_Σπουδών</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Graph -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Graph">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Γράφημα</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Index -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Index">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Ευρετήριο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Lecture -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Lecture">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Διάλεξη</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Less_than_One_hour -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Less_than_One_hour">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">Λιγότερο_από_Μία_ώρα</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Medium -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Medium">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Difficulty"/>
+        <rdfs:label xml:lang="el">Μέτριας_δυσκολίας</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Mixed -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Mixed">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/InteractivityType"/>
+        <rdfs:label xml:lang="el">Σύνθετος</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Narrative_Text -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Narrative_Text">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Αφήγηση (Κείμενο)</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/One_Day -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/One_Day">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">Μία_Ημέρα</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/One_Semester -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/One_Semester">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">Ένα_Εξάμηνο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/One_Week -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/One_Week">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">Μία_Εβδομάδα</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/One_Year -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/One_Year">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">Ένας_Χρόνος</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/One_hour_to_Three_hours -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/One_hour_to_Three_hours">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">Μία_ώρα_με_Τρεις_ώρες</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Other -->
+
+    <owl:NamedIndividual rdf:about="http://ltsc.ieee.org/xsd/LOM/Other">
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/InteractivityType"/>
+        <rdfs:label xml:lang="el">Άλλος</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/PhD -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/PhD">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Διδακτορικό</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Postgraduate -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Postgraduate">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Μεταπτυχιακό</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Problem_Statement -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Problem_Statement">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Διατύπωση_Προβλήματος</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Questionnaire -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Questionnaire">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Ερωτηματολόγιο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Revised -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Revised">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Status"/>
+        <rdfs:label xml:lang="el">Αναθεωρημένο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Second_Year -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Second_Year">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Δεύτερος_Χρόνος_Σπουδών</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Self_Assessment -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Self_Assessment">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Άσκηση_Αυτοαξιολόγησης</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Simulation -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Simulation">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Προσομοίωση</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Sixth_Year -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Sixth_Year">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Έκτος_Χρόνος_Σπουδών</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Slide -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Slide">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Διαφάνεια</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Student -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Student">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/IntendedEndUserRole"/>
+        <rdfs:label xml:lang="el">Εκπαιδευόμενος</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Table -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Table">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+        <rdfs:label xml:lang="el">Πίνακας</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Teacher -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Teacher">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/IntendedEndUserRole"/>
+        <rdfs:label xml:lang="el">Εκπαιδευτής</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Third_Year -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Third_Year">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Τρίτος_Χρόνος_Σπουδών</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Three_hours_to_Five_hours -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Three_hours_to_Five_hours">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        <rdfs:label xml:lang="el">Τρεις_ώρες_με_Πέντε_ώρες</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Undergraduate -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Undergraduate">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Context"/>
+        <rdfs:label xml:lang="el">Προπτυχιακό_Επίπεδο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Very_difficult -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Very_difficult">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Difficulty"/>
+        <rdfs:label xml:lang="el">Πολύ_δύσκολο</rdfs:label>
+    </owl:Thing>
+    
+
+
+    <!-- http://ltsc.ieee.org/xsd/LOM/Very_easy -->
+
+    <owl:Thing rdf:about="http://ltsc.ieee.org/xsd/LOM/Very_easy">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+        <rdf:type rdf:resource="http://ltsc.ieee.org/xsd/LOM/Difficulty"/>
+        <rdfs:label xml:lang="el">Πολύ_εύκολο</rdfs:label>
+    </owl:Thing>
+    
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // General axioms
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://ltsc.ieee.org/xsd/LOM/Context"/>
+            <rdf:Description rdf:about="http://ltsc.ieee.org/xsd/LOM/Difficulty"/>
+            <rdf:Description rdf:about="http://ltsc.ieee.org/xsd/LOM/IntendedEndUserRole"/>
+            <rdf:Description rdf:about="http://ltsc.ieee.org/xsd/LOM/InteractivityType"/>
+            <rdf:Description rdf:about="http://ltsc.ieee.org/xsd/LOM/LearningResourceType"/>
+            <rdf:Description rdf:about="http://ltsc.ieee.org/xsd/LOM/Status"/>
+            <rdf:Description rdf:about="http://ltsc.ieee.org/xsd/LOM/TypicalLearningTime"/>
+        </owl:members>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.6.20160910-2108) https://github.com/owlcs/owlapi -->
+
