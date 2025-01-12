@@ -21,10 +21,20 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'DEBUG',  # Set to DEBUG to see all logs
+        'level': 'DEBUG',
     },
     'loggers': {
-        'app': {  # Replace 'your_app_name' with your app's name
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',  # change to DEBUG to see more
+            'propagate': True,
+        },
+        '__main__': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'app': {  # Replace with the actual module of your view
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,

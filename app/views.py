@@ -1,11 +1,14 @@
 # your_app_name/views.py
-from collections import deque
+from collections import defaultdict, deque
+from django.http import HttpResponse
 from learning_spaces.kst import iita
 import pandas as pd
 import random
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets, status, permissions
-from .models import AppUser, KnowledgeGraph, GraphNode, Question, Test, TestAttempt
+
+from app.qti_generator import generate_qti
+from .models import AppUser, KnowledgeGraph, GraphNode, Question, Test, TestAttempt, TestQuestion
 from .serializers import (
     CustomTokenObtainPairSerializer, TestAttemptDetailSerializer, TestGraphSerializer, UserSerializer,
     KnowledgeGraphSerializer, GraphNodeSerializer, QuestionSerializer,TestSerializer, TestAttemptSerializer
@@ -60,7 +63,25 @@ class KnowledgeGraphViewSet(viewsets.ModelViewSet):
         graphs = KnowledgeGraph.objects.all()
         serializer = self.get_serializer(graphs, many=True)
         return Response(serializer.data)
+    
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new KnowledgeGraph instance with the current authenticated user
+        as the 'created_by' field.
+        """
+        # Get the data from the request
+        data = request.data.copy()  # Make a copy so we can add user info
+        data['created_by'] = request.user.id  # Set the 'created_by' field to the authenticated user
 
+        # Serialize the data
+        serializer = self.get_serializer(data=data)
+
+        if serializer.is_valid():
+            # Save the new KnowledgeGraph instance
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GraphNodeViewSet(viewsets.ModelViewSet):
     serializer_class = GraphNodeSerializer
@@ -297,97 +318,101 @@ class TestCreationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        graph_id = request.data.get('graph_id')
+        graph_id = int(request.data.get('graph_id'))
         question_ids = request.data.get('question_ids', [])
-        graph_id = int(graph_id)  
+
         graph = get_object_or_404(KnowledgeGraph, pk=graph_id)
+        questions = Question.objects.filter(id__in=question_ids).select_related('node')
 
-        questions = Question.objects.filter(id__in=question_ids)
-        
-        node_depths = {}
-        
-        def calculate_node_depth(node, node_depths):
-            if node.id in node_depths:
-                return node_depths[node.id]
+        # Get all nodes in the graph prefetched for performance
+        all_nodes = {node.id: node for node in graph.nodes.prefetch_related('prerequisite_nodes')}
 
-            logger.debug(f"Calculating depth for node: {node.title} (ID: {node.id})")
-            logger.debug(f"Prerequisites: {[prereq.title for prereq in node.prerequisite_nodes.all()]}")
+        # Memo dictionary to cache ancestor counts
+        ancestor_count_cache = {}
 
-            if node.prerequisite_nodes.count() == 0:
-                node_depths[node.id] = 0
-                logger.debug(f"Node {node.title} has no prerequisites. Depth = 0.")
+        def count_ancestors(node):
+            # If cached, return
+            if node.id in ancestor_count_cache:
+                return ancestor_count_cache[node.id]
+
+            # No prerequisites = 0 ancestors
+            prereqs = node.prerequisite_nodes.all()
+            if not prereqs:
+                ancestor_count_cache[node.id] = 0
                 return 0
 
-            max_depth = -1  
+            # Calculate unique ancestors count recursively
+            ancestors = set()
+            for prereq in prereqs:
+                ancestors.add(prereq.id)
+                # Add ancestors of prerequisite
+                ancestors.update(self.get_ancestor_ids(prereq, all_nodes, ancestor_count_cache))
+            ancestor_count_cache[node.id] = len(ancestors)
+            return len(ancestors)
 
-            for prerequisite in node.prerequisite_nodes.all():
-                prerequisite_depth = calculate_node_depth(prerequisite, node_depths)
-                logger.debug(f"Prerequisite {prerequisite.title} (ID: {prerequisite.id}) has depth {prerequisite_depth}.")
-                max_depth = max(max_depth, prerequisite_depth + 1)
+        # Helper to get all ancestor IDs of a node recursively (to avoid recounting)
+        def get_ancestor_ids(node, all_nodes, cache):
+            if node.id in cache and isinstance(cache[node.id], set):
+                return cache[node.id]
 
-            node_depths[node.id] = max_depth
-            logger.debug(f"Node {node.title} has calculated depth {max_depth}.")
-            return max_depth
+            prereqs = node.prerequisite_nodes.all()
+            if not prereqs:
+                cache[node.id] = set()
+                return set()
 
-        question_depths = {}
-        node_depths = {} 
-        for question in questions:
-            node = question.node
-            depth = calculate_node_depth(node, node_depths)
-            logger.debug(f"Node {node.title} (ID: {node.id}) has depth {depth}.")
-            question_depths[question] = depth
+            ancestors = set()
+            for prereq in prereqs:
+                ancestors.add(prereq.id)
+                ancestors.update(get_ancestor_ids(prereq, all_nodes, cache))
+            cache[node.id] = ancestors
+            return ancestors
 
-        sorted_questions = sorted(question_depths.items(), key=lambda x: x[1])
+        # We'll use get_ancestor_ids, so cache must store sets during recursion
+        ancestor_count_cache = {}
+
+        # Replacing count_ancestors with get_ancestor_ids length
+        def count_ancestors_final(node):
+            return len(get_ancestor_ids(node, all_nodes, ancestor_count_cache))
+
+        # Map questions to ancestor counts
+        question_ancestors = {}
+        for q in questions:
+            anc_count = count_ancestors_final(q.node)
+            question_ancestors[q] = anc_count
+            logger.debug(f"Question ID {q.id} | Text: {q.text[:50]}... | Node ID {q.node.id} has {anc_count} ancestors")
+
+
+        # Sort questions by ancestor count ascending
+        sorted_questions = sorted(question_ancestors.items(), key=lambda x: x[1])
 
         test = Test.objects.create(
             graph=graph,
             title=f"Test for {graph.title}",
-            author=request.user
+            author=request.user,
         )
 
-        for question, _ in sorted_questions:
-            test.questions.add(question)
+        for idx, (question, _) in enumerate(sorted_questions):
+            TestQuestion.objects.create(test=test, question=question, order=idx)
 
         return Response({"test_id": test.id}, status=status.HTTP_201_CREATED)
-
-    def calculate_graph_depth(self, graph):
-        node_depths = {}
-
-        queue = deque()
-
-        for node in graph.nodes.all():
-            if node.prerequisite_nodes.count() == 0:
-                node_depths[node.id] = 0  
-                queue.append(node)
-
-        while queue:
-            current_node = queue.popleft()
-            current_depth = node_depths[current_node.id]
-
-            for dependent in current_node.dependent_nodes.all():
-                if dependent.id not in node_depths: 
-                    node_depths[dependent.id] = current_depth + 1
-                    queue.append(dependent)
-
-        logger.debug(node_depths)
-        return node_depths
     
 class TestAttemptView(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
 
     def get(self, request, test_id):
         test = get_object_or_404(Test, pk=test_id)
-        questions = test.questions.all()
-        serialized_questions = []
 
-        for question in questions:
+        test_questions = test.testquestion_set.select_related('question').order_by('order')
+
+        serialized_questions = []
+        for tq in test_questions:
+            question = tq.question
             all_answers = question.other_answers + [question.correct_answer]
             random.shuffle(all_answers)
-
             serialized_questions.append({
                 "id": question.id,
                 "text": question.text,
-                "answers": all_answers,  
+                "answers": all_answers,
             })
 
         return Response(serialized_questions)
@@ -556,3 +581,37 @@ class GenerateGraphFromIITA(APIView):
                     added_dependencies.add((prerequisite_node.id, target_node.id))
 
         return Response({"message": "New graph created successfully"}, status=status.HTTP_201_CREATED)
+    
+class TestsForGraphView(APIView):
+    """
+    Retrieve all tests for a specific graph.
+    """
+    def get(self, request, graph_id):
+        tests = Test.objects.filter(graph_id=graph_id)
+        serializer = TestGraphSerializer(tests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class QuestionsForTestView(APIView):
+    """
+    Retrieve all questions for a specific test.
+    """
+    def get(self, request, test_id):
+        test = get_object_or_404(Test, pk=test_id)
+        questions = test.questions.values('id', 'text', 'node_id')
+        return Response(list(questions), status=status.HTTP_200_OK)
+
+
+class DownloadIQTFormView(APIView):
+    """
+    Generate and return an IMS QTI file for the test.
+    """
+    def get(self, request, test_id):
+        test = get_object_or_404(Test, pk=test_id)
+
+        tree = generate_qti(test_id)
+        
+        response = HttpResponse(content_type='application/xml')
+        response['Content-Disposition'] = f'attachment; filename="test_{test_id}_qti.xml"'
+        tree.write(response, encoding="utf-8", xml_declaration=True)
+
+        return response

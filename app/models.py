@@ -67,10 +67,24 @@ class Test(models.Model):
     graph = models.ForeignKey(KnowledgeGraph, on_delete=models.CASCADE, related_name='tests')
     title = models.CharField(max_length=255)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tests')
-    questions = models.ManyToManyField(Question, related_name='tests') 
+    questions = models.ManyToManyField(
+        Question,
+        through='TestQuestion',
+        related_name='tests',
+        blank=True
+    )
 
     def __str__(self):
         return self.title
+
+class TestQuestion(models.Model):
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['order']
+        unique_together = ('test', 'question')
 
 class TestAttempt(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='attempts')
