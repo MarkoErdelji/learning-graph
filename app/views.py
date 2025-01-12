@@ -1,10 +1,13 @@
 # your_app_name/views.py
 from collections import deque
+from django.http import HttpResponse
 from learning_spaces.kst import iita
 import pandas as pd
 import random
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets, status, permissions
+
+from app.qti_generator import generate_qti
 from .models import AppUser, KnowledgeGraph, GraphNode, Question, Test, TestAttempt
 from .serializers import (
     CustomTokenObtainPairSerializer, TestAttemptDetailSerializer, TestGraphSerializer, UserSerializer,
@@ -60,7 +63,25 @@ class KnowledgeGraphViewSet(viewsets.ModelViewSet):
         graphs = KnowledgeGraph.objects.all()
         serializer = self.get_serializer(graphs, many=True)
         return Response(serializer.data)
+    
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new KnowledgeGraph instance with the current authenticated user
+        as the 'created_by' field.
+        """
+        # Get the data from the request
+        data = request.data.copy()  # Make a copy so we can add user info
+        data['created_by'] = request.user.id  # Set the 'created_by' field to the authenticated user
 
+        # Serialize the data
+        serializer = self.get_serializer(data=data)
+
+        if serializer.is_valid():
+            # Save the new KnowledgeGraph instance
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GraphNodeViewSet(viewsets.ModelViewSet):
     serializer_class = GraphNodeSerializer
@@ -556,3 +577,37 @@ class GenerateGraphFromIITA(APIView):
                     added_dependencies.add((prerequisite_node.id, target_node.id))
 
         return Response({"message": "New graph created successfully"}, status=status.HTTP_201_CREATED)
+    
+class TestsForGraphView(APIView):
+    """
+    Retrieve all tests for a specific graph.
+    """
+    def get(self, request, graph_id):
+        tests = Test.objects.filter(graph_id=graph_id)
+        serializer = TestGraphSerializer(tests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class QuestionsForTestView(APIView):
+    """
+    Retrieve all questions for a specific test.
+    """
+    def get(self, request, test_id):
+        test = get_object_or_404(Test, pk=test_id)
+        questions = test.questions.values('id', 'text', 'node_id')
+        return Response(list(questions), status=status.HTTP_200_OK)
+
+
+class DownloadIQTFormView(APIView):
+    """
+    Generate and return an IMS QTI file for the test.
+    """
+    def get(self, request, test_id):
+        test = get_object_or_404(Test, pk=test_id)
+
+        tree = generate_qti(test_id)
+        
+        response = HttpResponse(content_type='application/xml')
+        response['Content-Disposition'] = f'attachment; filename="test_{test_id}_qti.xml"'
+        tree.write(response, encoding="utf-8", xml_declaration=True)
+
+        return response
