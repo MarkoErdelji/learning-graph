@@ -501,30 +501,35 @@ class TestResultsView(APIView):
         except Test.DoesNotExist:
             return Response({"error": "Test not found."}, status=status.HTTP_404_NOT_FOUND)
         
-
 class GenerateGraphFromIITA(APIView):
     def post(self, request, test_id):
-        """
-        Generate a new knowledge graph using the IITA algorithm and save it.
-        """
         test = get_object_or_404(Test, pk=test_id)
         original_graph = test.graph
 
         attempts = TestAttempt.objects.filter(test=test)
         nodes = list(original_graph.nodes.all())
 
-        index_to_node = {idx: node.id for idx, node in enumerate(nodes)}  
+        # Map index -> original node ID
+        index_to_node_id = {idx: node.id for idx, node in enumerate(nodes)}
 
+        # Create the binary matrix (users x questions)
         data = []
         for attempt in attempts:
-            row = []  
-            for question_id, answer in attempt.answers.items():
-                question = get_object_or_404(Question, pk=question_id)
-                row.append(answer)  
+            row = []
+            for node_index, node in enumerate(nodes):
+                node_questions = node.questions.all()
+                answered_correctly = any(
+                    str(q.id) in attempt.answers and attempt.answers[str(q.id)]
+                    for q in node_questions
+                )
+                row.append(1 if answered_correctly else 0)
+                for q in node_questions:
+                    q_answered = bool(str(q.id) in attempt.answers and attempt.answers[str(q.id)])
+                    logger.debug(f"  Node idx {node_index}, Question ID {q.id}: '{q.text}' - Answered correctly: {q_answered}")
+
             data.append(row)
 
         df = pd.DataFrame(data)
-
         df = df.fillna(0)
 
         if df.empty or df.isnull().values.any():
@@ -532,6 +537,8 @@ class GenerateGraphFromIITA(APIView):
                 {"error": "Invalid or incomplete data provided for IITA analysis"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        logger.debug("Input matrix for IITA:\n%s", df.to_string(index=False, header=True))
 
         try:
             response = iita(df, v=1)
@@ -542,46 +549,56 @@ class GenerateGraphFromIITA(APIView):
             )
 
         implications = response.get("implications", [])
+        logger.debug("IITA raw implications (index-based): %s", implications)
 
-        new_graph_title = f"{original_graph.title} (IITA)"
+        # Create new graph
         new_graph = KnowledgeGraph.objects.create(
-            title=new_graph_title,
+            title=f"{original_graph.title} (IITA)",
             created_by=original_graph.created_by
         )
 
+        # Clone nodes and questions
         node_mapping = {}
-        for node in original_graph.nodes.all():
+        for node in nodes:
             cloned_node = GraphNode.objects.create(
                 graph=new_graph,
                 title=node.title
             )
-            node_mapping[node.id] = cloned_node 
-            cloned_node.save()  
+            node_mapping[node.id] = cloned_node
+
             for question in node.questions.all():
-                cloned_question = Question.objects.create(
-                    node=cloned_node, 
+                Question.objects.create(
+                    node=cloned_node,
                     text=question.text,
                     correct_answer=question.correct_answer,
                     other_answers=question.other_answers
                 )
-                cloned_question.save() 
 
+        # Apply implications: A → B means B has A as prerequisite
         added_dependencies = set()
 
-        for prereq_index, node_index in implications:
-            prereq_node_id = index_to_node.get(prereq_index)  
-            target_node_id = index_to_node.get(node_index) 
+        for prereq_idx, target_idx in implications:
+            prereq_node_id = index_to_node_id.get(prereq_idx)
+            target_node_id = index_to_node_id.get(target_idx)
 
             prerequisite_node = node_mapping.get(prereq_node_id)
             target_node = node_mapping.get(target_node_id)
 
             if prerequisite_node and target_node:
-                if (target_node.id,prerequisite_node.id) not in added_dependencies:
-                    target_node.dependent_nodes.add(prerequisite_node)
-                    added_dependencies.add((prerequisite_node.id, target_node.id))
+                 # Reverse edge in the format of added_dependencies: (target, prereq)
+                reverse_edge = (prereq_node_id, target_node_id)
+                forward_edge = (target_node_id, prereq_node_id)
+
+                if reverse_edge in added_dependencies:
+                    logger.debug(f"Skipping edge {prereq_node_id} -> {target_node_id} because reverse edge is already added")
+                    continue
+
+                if forward_edge not in added_dependencies:
+                    target_node.prerequisite_nodes.add(prerequisite_node)
+                    added_dependencies.add(forward_edge)
 
         return Response({"message": "New graph created successfully"}, status=status.HTTP_201_CREATED)
-    
+
 class TestsForGraphView(APIView):
     """
     Retrieve all tests for a specific graph.
@@ -615,3 +632,4 @@ class DownloadIQTFormView(APIView):
         tree.write(response, encoding="utf-8", xml_declaration=True)
 
         return response
+    
