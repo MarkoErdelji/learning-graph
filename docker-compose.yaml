@@ -1,18 +1,6 @@
 version: '3'
 
 services:
- # web:
-  #  build: .
-  #  command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-  #  volumes:
- #     - .:/app
- #   ports:
- #     - "8000:8000"
-#    depends_on:
-#      - my-postgres
-#    environment:
-#      - DJANGO_SETTINGS_MODULE=app.settings
-
   my-postgres:
     image: postgres
     environment:
@@ -24,6 +12,23 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  virtuoso:
+    image: openlink/virtuoso-opensource-7:latest
+    environment:
+      - DBA_PASSWORD=dba
+      - SPARQL_UPDATE=true
+      - DEFAULT_GRAPH=http://example.com/sotis
+    ports:
+      - "8890:8890"
+    volumes:
+      - virtuoso_data:/data
+      - ./virtuoso.ini:/data/virtuoso.ini
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8890/sparql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres_data:
+  virtuoso_data:

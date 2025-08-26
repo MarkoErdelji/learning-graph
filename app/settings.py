@@ -10,6 +10,12 @@ SECRET_KEY = 'django-insecure-ot+@*xi0tktc^l^hd5cc0vdgfnvet#!t4(fn@y0azr2i1_%y8r
 DEBUG = True
 ALLOWED_HOSTS = ['*']  # Allow all hosts in development; restrict in production
 
+VIRTUOSO_HOST = os.getenv('VIRTUOSO_HOST', 'localhost')
+VIRTUOSO_PORT = os.getenv('VIRTUOSO_PORT', '8890')
+VIRTUOSO_SPARQL_ENDPOINT = 'http://localhost:8890/sparql-auth'
+SOTIS_GRAPH = 'http://example.com/sotis/graph'
+SOTIS_NS = 'http://example.com/sotis#'
+LOM_NS = 'http://ltsc.ieee.org/xsd/LOM#'
 
 LOGGING = {
     'version': 1,
