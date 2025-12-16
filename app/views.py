@@ -443,11 +443,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
             serializer = QuestionSerializer(question, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
-            question_data = json.dumps({
-                "text": instance.text,
-                "correct_answer": instance.correct_answer,
-                "other_answers": instance.other_answers
-            })
             query = f"""
             PREFIX lom: <{LOM_NS}>
             PREFIX sotis: <{SOTIS_NS}>
@@ -457,7 +452,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                     <{instance.uri}> rdf:type sotis:Question ;
                                      lom:identifier "{instance.uri}" ;
                                      lom:title "{instance.text}" ;
-                                     lom:description '{question_data}' ;
+                                     lom:description '{instance.description}' ;
                                      lom:learningResourceType lom:Questionnaire ;
                                      lom:language "{instance.language}" ;
                                      lom:partOf <{instance.node_uri}> ;
@@ -1148,3 +1143,523 @@ class DownloadIQTFormView(APIView):
         except Exception as e:
             logger.error(f"Error generating QTI file: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class StudentOverallAverageView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT (AVG(?score) AS ?avgScore) (COUNT(?attempt) AS ?totalAttempts)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt rdf:type sotis:TestAttempt ;
+                     lom:contributor <{user_uri}> ;
+                     lom:description ?desc .
+            BIND(REPLACE(STR(?desc), ".*Score: ([0-9.]+(\\.[0-9]+)?).*", "$1") AS ?rawScore)
+            BIND(xsd:float(?rawScore) AS ?score)
+          }}
+        }}
+        """
+        results = execute_select(query)
+        b = results["results"]["bindings"][0] if results["results"]["bindings"] else {}
+        data = {
+            "average_score": round(float(b.get("avgScore", {}).get("value", 0)), 1),
+            "total_attempts": int(b.get("totalAttempts", {}).get("value", 0))
+        }
+        return Response(data)
+
+
+class StudentProgressOverTimeView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?testTitle ?date ?desc
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt rdf:type sotis:TestAttempt ;
+                     lom:contributor <{user_uri}> ;
+                     lom:partOf ?test ;
+                     lom:description ?desc ;
+                     lom:date ?date .
+            ?test lom:title ?testTitle .
+          }}
+        }}
+        ORDER BY ?date
+        """
+        results = execute_select(query)
+        data = []
+        for b in results["results"]["bindings"]:
+            desc = b["desc"]["value"]
+            match = re.search(r"Score: (\d+\.?\d*)", desc)
+            score = float(match.group(1)) if match else 0
+            data.append({
+                "test": b["testTitle"]["value"],
+                "date": b["date"]["value"][:10],
+                "score": score
+            })
+        return Response(data)
+
+
+class StudentTopicMasteryView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?nodeTitle (AVG(?correctFloat) AS ?avgScore) (COUNT(?q) AS ?questionsAttempted)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:contributor <{user_uri}> ;
+                     sotis:hasAnswer ?ans .
+            ?ans sotis:question ?q ;
+                 sotis:answer ?given .
+            ?q lom:partOf ?node ;
+               sotis:correctAnswer ?correct .
+            ?node lom:title ?nodeTitle .
+            BIND(IF(STR(?given) = STR(?correct), 1.0, 0.0) AS ?correctFloat)
+          }}
+        }}
+        GROUP BY ?nodeTitle
+        HAVING (COUNT(?q) > 0)
+        ORDER BY DESC(?avgScore)
+        """
+        results = execute_select(query)
+        data = []
+        for b in results["results"]["bindings"]:
+            data.append({
+                "topic": b["nodeTitle"]["value"],
+                "mastery_percent": round(float(b["avgScore"]["value"]) * 100, 1),
+                "questions": int(b["questionsAttempted"]["value"])
+            })
+        return Response(data)
+
+
+class StudentFrequentlyWrongView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?questionText (COUNT(?wrong) AS ?wrongCount)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:contributor <{user_uri}> ;
+                     sotis:hasAnswer ?ans .
+            ?ans sotis:question ?q ;
+                 sotis:answer ?given .
+            ?q lom:title ?questionText ;
+               sotis:correctAnswer ?correct .
+            FILTER(STR(?given) != STR(?correct))
+            BIND(1 AS ?wrong)
+          }}
+        }}
+        GROUP BY ?q ?questionText
+        ORDER BY DESC(?wrongCount)
+        LIMIT 10
+        """
+        results = execute_select(query)
+        data = [
+            {
+                "question": b["questionText"]["value"][:80] + "..." if len(b["questionText"]["value"]) > 80 else b["questionText"]["value"],
+                "wrong_times": int(b["wrongCount"]["value"])
+            }
+            for b in results["results"]["bindings"]
+        ]
+        return Response(data)
+
+
+class StudentRankingView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?studentName (AVG(?score) AS ?avgScore)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt rdf:type sotis:TestAttempt ;
+                     lom:contributor ?student ;
+                     lom:description ?desc .
+            ?student lom:title ?studentName .
+            BIND(REPLACE(STR(?desc), ".*Score: ([0-9.]+(\\.[0-9]+)?).*", "$1") AS ?raw)
+            BIND(xsd:float(?raw) AS ?score)
+          }}
+        }}
+        GROUP BY ?student ?studentName
+        ORDER BY DESC(?avgScore)
+        """
+        results = execute_select(query)
+        ranked = []
+        my_rank = None
+        my_score = None
+        for i, b in enumerate(results["results"]["bindings"], 1):
+            name = b["studentName"]["value"]
+            score = round(float(b["avgScore"]["value"]), 1)
+            ranked.append({"rank": i, "name": name, "score": score})
+            if request.user.username in name or str(request.user.id) in name:
+                my_rank = i
+                my_score = score
+        return Response({
+            "my_rank": my_rank or "N/A",
+            "my_score": my_score or 0,
+            "total_students": len(ranked),
+            "top_5": ranked[:5]
+        })
+
+
+class StudentRecommendationsView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?nodeTitle (AVG(?correct) AS ?mastery)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:contributor <{user_uri}> ;
+                     sotis:hasAnswer ?ans .
+            ?ans sotis:question ?q ;
+                 sotis:answer ?given .
+            ?q lom:partOf ?node ;
+               sotis:correctAnswer ?correct .
+            ?node lom:title ?nodeTitle .
+            BIND(IF(STR(?given) = STR(?correct), 1.0, 0.0) AS ?correct)
+          }}
+        }}
+        GROUP BY ?nodeTitle
+        HAVING (AVG(?correct) < 0.7)
+        ORDER BY ?mastery
+        LIMIT 5
+        """
+        results = execute_select(query)
+        data = [
+            {
+                "topic": b["nodeTitle"]["value"],
+                "mastery_percent": round(float(b["mastery"]["value"]) * 100, 1)
+            }
+            for b in results["results"]["bindings"]
+        ]
+        return Response(data)
+
+
+class StudentCompletionRateView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT (COUNT(?completed) AS ?done) (COUNT(?all) AS ?total)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:contributor <{user_uri}> .
+            OPTIONAL {{ ?attempt lom:status "lom:Final" . BIND(1 AS ?completed) }}
+            BIND(1 AS ?all)
+          }}
+        }}
+        """
+        results = execute_select(query)
+        b = results["results"]["bindings"][0]
+        done = int(b["done"]["value"])
+        total = int(b["total"]["value"])
+        rate = round(done / total * 100, 1) if total > 0 else 0
+        return Response({
+            "completed": done,
+            "started": total,
+            "completion_rate_percent": rate
+        })
+
+
+class StudentRecentTestsView(APIView):
+    def get(self, request):
+        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?testTitle ?date ?desc
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:contributor <{user_uri}> ;
+                     lom:partOf ?test ;
+                     lom:description ?desc ;
+                     lom:date ?date .
+            ?test lom:title ?testTitle .
+          }}
+        }}
+        ORDER BY DESC(?date)
+        LIMIT 5
+        """
+        results = execute_select(query)
+        data = []
+        for b in results["results"]["bindings"]:
+            desc = b["desc"]["value"]
+            match = re.search(r"Score: (\d+\.?\d*)", desc)
+            score = float(match.group(1)) if match else 0
+            data.append({
+                "test": b["testTitle"]["value"],
+                "date": b["date"]["value"][:10],
+                "score": score
+            })
+        return Response(data)
+
+
+# ------------------------------------------------------------------
+# TEACHER-FACING ANALYTICS (8 views)
+# ------------------------------------------------------------------
+
+class ClassAveragePerTestView(APIView):
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?testTitle (AVG(?score) AS ?avgScore) (COUNT(?attempt) AS ?participants)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:partOf ?test ;
+                     lom:description ?desc .
+            ?test lom:title ?testTitle .
+            BIND(REPLACE(STR(?desc), ".*Score: ([0-9.]+(\\.[0-9]+)?).*", "$1") AS ?raw)
+            BIND(xsd:float(?raw) AS ?score)
+          }}
+        }}
+        GROUP BY ?test ?testTitle
+        ORDER BY DESC(?avgScore)
+        """
+        results = execute_select(query)
+        data = [
+            {
+                "test": b["testTitle"]["value"],
+                "average_score": round(float(b["avgScore"]["value"]), 1),
+                "participants": int(b["participants"]["value"])
+            }
+            for b in results["results"]["bindings"]
+        ]
+        return Response(data)
+
+
+class ClassHardestQuestionsView(APIView):
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?questionText (COUNT(?wrong) AS ?wrongCount) (COUNT(?total) AS ?attempted)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt sotis:hasAnswer ?ans .
+            ?ans sotis:question ?q ;
+                 sotis:answer ?given .
+            ?q lom:title ?questionText ;
+               sotis:correctAnswer ?correct .
+            BIND(IF(STR(?given) != STR(?correct), 1, 0) AS ?wrong)
+            BIND(1 AS ?total)
+          }}
+        }}
+        GROUP BY ?q ?questionText
+        HAVING (COUNT(?total) > 2)
+        ORDER BY DESC(?wrongCount)
+        LIMIT 15
+        """
+        results = execute_select(query)
+        data = []
+        for b in results["results"]["bindings"]:
+            wrong = int(b["wrongCount"]["value"])
+            total = int(b["attempted"]["value"])
+            data.append({
+                "question": b["questionText"]["value"][:70] + "..." if len(b["questionText"]["value"]) > 70 else b["questionText"]["value"],
+                "difficulty_percent": round(wrong / total * 100, 1),
+                "wrong": wrong,
+                "attempted": total
+            })
+        return Response(data)
+
+
+class StudentsNeedingHelpView(APIView):
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?studentName (AVG(?score) AS ?avgScore) (COUNT(?attempt) AS ?tests)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:contributor ?student ;
+                     lom:description ?desc .
+            ?student lom:title ?studentName .
+            BIND(REPLACE(STR(?desc), ".*Score: ([0-9.]+(\\.[0-9]+)?).*", "$1") AS ?raw)
+            BIND(xsd:float(?raw) AS ?score)
+          }}
+        }}
+        GROUP BY ?student ?studentName
+        HAVING (AVG(?score) < 60 && COUNT(?attempt) >= 2)
+        ORDER BY ?avgScore
+        LIMIT 10
+        """
+        results = execute_select(query)
+        data = [
+            {
+                "name": b["studentName"]["value"],
+                "average_score": round(float(b["avgScore"]["value"]), 1),
+                "tests_taken": int(b["tests"]["value"])
+            }
+            for b in results["results"]["bindings"]
+        ]
+        return Response(data)
+
+
+class ClassTopicMasteryView(APIView):
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?nodeTitle (AVG(?correct) AS ?classMastery)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt sotis:hasAnswer ?ans .
+            ?ans sotis:question ?q ;
+                 sotis:answer ?given .
+            ?q lom:partOf ?node ;
+               sotis:correctAnswer ?correct .
+            ?node lom:title ?nodeTitle .
+            BIND(IF(STR(?given) = STR(?correct), 1.0, 0.0) AS ?correct)
+          }}
+        }}
+        GROUP BY ?nodeTitle
+        ORDER BY DESC(?classMastery)
+        """
+        results = execute_select(query)
+        data = [
+            {
+                "topic": b["nodeTitle"]["value"],
+                "class_mastery_percent": round(float(b["classMastery"]["value"]) * 100, 1)
+            }
+            for b in results["results"]["bindings"]
+        ]
+        return Response(data)
+
+
+class TestParticipationView(APIView):
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?testTitle (COUNT(?attempt) AS ?participants)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:partOf ?test .
+            ?test lom:title ?testTitle .
+          }}
+        }}
+        GROUP BY ?testTitle
+        ORDER BY DESC(?participants)
+        """
+        results = execute_select(query)
+        data = [
+            {
+                "test": b["testTitle"]["value"],
+                "participants": int(b["participants"]["value"])
+            }
+            for b in results["results"]["bindings"]
+        ]
+        return Response(data)
+
+
+class MostImprovedStudentsView(APIView):
+
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?studentName ?date ?desc
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:contributor ?student ;
+                     lom:description ?desc ;
+                     lom:date ?date .
+            ?student lom:title ?studentName .
+          }}
+        }}
+        ORDER BY ?studentName ?date
+        """
+        results = execute_select(query)
+        students = {}
+        for b in results["results"]["bindings"]:
+            name = b["studentName"]["value"]
+            match = re.search(r"Score: (\d+\.?\d*)", b["desc"]["value"])
+            score = float(match.group(1)) if match else 0
+            if name not in students:
+                students[name] = []
+            students[name].append(score)
+
+        improved = []
+        for name, scores in students.items():
+            if len(scores) >= 2:
+                improvement = scores[-1] - scores[0]
+                if improvement > 5:
+                    improved.append({
+                        "student": name,
+                        "first_score": round(scores[0], 1),
+                        "latest_score": round(scores[-1], 1),
+                        "improvement": round(improvement, 1)
+                    })
+        return Response(sorted(improved, key=lambda x: x["improvement"], reverse=True)[:10])
+
+
+class DiscriminatingQuestionsView(APIView):
+
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?questionText (AVG(?correct) AS ?pValue)
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt sotis:hasAnswer ?ans .
+            ?ans sotis:question ?q ;
+                 sotis:answer ?given .
+            ?q lom:title ?questionText ;
+               sotis:correctAnswer ?correct .
+            BIND(IF(STR(?given) = STR(?correct), 1.0, 0.0) AS ?correct)
+          }}
+        }}
+        GROUP BY ?q ?questionText
+        HAVING (COUNT(*) > 5)
+        ORDER BY ABS(0.5 - AVG(?correct)) DESC
+        LIMIT 10
+        """
+        results = execute_select(query)
+        data = [
+            {
+                "question": b["questionText"]["value"][:70] + "..." if len(b["questionText"]["value"]) > 70 else b["questionText"]["value"],
+                "difficulty_percent": round(float(b["pValue"]["value"]) * 100, 1)
+            }
+            for b in results["results"]["bindings"]
+        ]
+        return Response(data)
+
+
+class ClassScoreDistributionView(APIView):
+
+    def get(self, request):
+        query = f"""
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX sotis: <http://example.com/sotis#>
+        SELECT ?desc
+        WHERE {{
+          GRAPH <http://example.com/sotis/graph> {{
+            ?attempt lom:description ?desc .
+          }}
+        }}
+        """
+        results = execute_select(query)
+        scores = []
+        for b in results["results"]["bindings"]:
+            match = re.search(r"Score: (\d+\.?\d*)", b["desc"]["value"])
+            if match:
+                scores.append(float(match.group(1)))
+
+        bins = [0, 50, 60, 70, 80, 90, 100]
+        labels = ["0-49", "50-59", "60-69", "70-79", "80-89", "90-100"]
+        hist, _ = np.histogram(scores, bins=bins)
+        data = [{"range": l, "count": int(c)} for l, c in zip(labels, hist)]
+        return Response(data)
