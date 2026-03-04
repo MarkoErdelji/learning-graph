@@ -1,230 +1,512 @@
-<?xml version="1.0"?>
-<rdf:RDF xmlns="http://example.com/sotis#"
-     xml:base="http://example.com/sotis"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:lom="http://ltsc.ieee.org/xsd/LOM#"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+<rdf:RDF
+    xmlns="http://example.com/sotis#"
+    xml:base="http://example.com/sotis"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    xmlns:lom="http://ltsc.ieee.org/xsd/LOM/"
+    xmlns:sotis="http://example.com/sotis#">
+
     <owl:Ontology rdf:about="http://example.com/sotis">
-        <dc:date>2025-07-26</dc:date>
-        <rdfs:comment>IEEE LOM Ontology for SOTIS Project</rdfs:comment>
-        <dc:rights>Marko Erdelji</dc:rights>
-        <dc:description>IEEE LOM ontology for knowledge graphs, nodes, questions, tests, and attempts.</dc:description>
-        <owl:versionInfo>1.1</owl:versionInfo>
+        <dc:title>SOTIS Knowledge Graph Ontology</dc:title>
+        <dc:description>
+            Ontology for the SOTIS project. Models knowledge graphs, nodes, questions,
+            tests and test attempts as LOM-aligned learning objects.
+            Reuses the IEEE LOM Educational category vocabulary.
+        </dc:description>
         <dc:creator>Marko Erdelji</dc:creator>
+        <dc:date rdf:datatype="&xsd;date">2025-07-26</dc:date>
     </owl:Ontology>
 
-    <owl:Class rdf:about="lom:LearningObject">
-        <rdfs:label xml:lang="en">Learning Object</rdfs:label>
-        <rdfs:comment>Any entity used for learning, education, or training.</rdfs:comment>
+
+    <!-- ============================================================
+         LOM CONTROLLED VOCABULARY CLASSES
+         (IEEE 1484.12.1 Educational category vocabulary terms)
+         ============================================================ -->
+
+    <owl:Class rdf:about="&lom;Difficulty">
+        <rdfs:label>Difficulty</rdfs:label>
+        <rdfs:comment>
+            LOM Educational.Difficulty vocabulary.
+            Allowed values: lom:Easy, lom:Medium, lom:Difficult (IEEE 1484.12.1 §9.1.2).
+        </rdfs:comment>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:oneOf rdf:parseType="Collection">
+                    <owl:NamedIndividual rdf:about="&lom;Easy"/>
+                    <owl:NamedIndividual rdf:about="&lom;Medium"/>
+                    <owl:NamedIndividual rdf:about="&lom;Difficult"/>
+                </owl:oneOf>
+            </owl:Class>
+        </owl:equivalentClass>
     </owl:Class>
 
-    <owl:Class rdf:about="lom:Context">
-        <rdfs:label>Educational Context</rdfs:label>
+    <owl:Class rdf:about="&lom;Context">
+        <rdfs:label>Context</rdfs:label>
+        <rdfs:comment>
+            LOM Educational.Context vocabulary.
+            Allowed values: lom:School, lom:Higher_Education (IEEE 1484.12.1 §9.1.5).
+        </rdfs:comment>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:oneOf rdf:parseType="Collection">
+                    <owl:NamedIndividual rdf:about="&lom;School"/>
+                    <owl:NamedIndividual rdf:about="&lom;Higher_Education"/>
+                </owl:oneOf>
+            </owl:Class>
+        </owl:equivalentClass>
     </owl:Class>
 
-    <owl:Class rdf:about="lom:Difficulty">
-        <rdfs:label>Difficulty Level</rdfs:label>
-    </owl:Class>
-
-    <owl:Class rdf:about="lom:IntendedEndUserRole">
+    <owl:Class rdf:about="&lom;IntendedEndUserRole">
         <rdfs:label>Intended End User Role</rdfs:label>
+        <rdfs:comment>
+            LOM Educational.IntendedEndUserRole vocabulary.
+            Allowed values: lom:Student, lom:Teacher (IEEE 1484.12.1 §9.1.4).
+        </rdfs:comment>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:oneOf rdf:parseType="Collection">
+                    <owl:NamedIndividual rdf:about="&lom;Student"/>
+                    <owl:NamedIndividual rdf:about="&lom;Teacher"/>
+                </owl:oneOf>
+            </owl:Class>
+        </owl:equivalentClass>
     </owl:Class>
 
-    <owl:Class rdf:about="lom:LearningResourceType">
+    <owl:Class rdf:about="&lom;LearningResourceType">
         <rdfs:label>Learning Resource Type</rdfs:label>
+        <rdfs:comment>
+            LOM Educational.LearningResourceType vocabulary.
+            Allowed values: lom:Graph, lom:Questionnaire, lom:Narrative_Text
+            (IEEE 1484.12.1 §9.1.1).
+        </rdfs:comment>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:oneOf rdf:parseType="Collection">
+                    <owl:NamedIndividual rdf:about="&lom;Graph"/>
+                    <owl:NamedIndividual rdf:about="&lom;Questionnaire"/>
+                    <owl:NamedIndividual rdf:about="&lom;Narrative_Text"/>
+                </owl:oneOf>
+            </owl:Class>
+        </owl:equivalentClass>
     </owl:Class>
 
-    <!-- Core LOM Properties -->
-    <owl:DatatypeProperty rdf:about="lom:identifier">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:anyURI"/>
-        <rdfs:label>identifier</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:Class rdf:about="&lom;Status">
+        <rdfs:label>Status</rdfs:label>
+        <rdfs:comment>
+            LOM Lifecycle.Status vocabulary.
+            Allowed values: lom:Final (IEEE 1484.12.1 §2.2).
+        </rdfs:comment>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:oneOf rdf:parseType="Collection">
+                    <owl:NamedIndividual rdf:about="&lom;Final"/>
+                </owl:oneOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
 
-    <owl:DatatypeProperty rdf:about="lom:title">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>title</rdfs:label>
-    </owl:DatatypeProperty>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="&lom;Difficulty"/>
+            <rdf:Description rdf:about="&lom;Context"/>
+            <rdf:Description rdf:about="&lom;IntendedEndUserRole"/>
+            <rdf:Description rdf:about="&lom;LearningResourceType"/>
+            <rdf:Description rdf:about="&lom;Status"/>
+        </owl:members>
+    </rdf:Description>
 
-    <owl:DatatypeProperty rdf:about="lom:language">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:language"/>
-        <rdfs:label>language</rdfs:label>
-    </owl:DatatypeProperty>
 
-    <owl:DatatypeProperty rdf:about="lom:description">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>description</rdfs:label>
-    </owl:DatatypeProperty>
+    <!-- ============================================================
+         SOTIS DOMAIN CLASSES
+         ============================================================ -->
 
-    <owl:DatatypeProperty rdf:about="lom:keyword">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>keyword</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:Class rdf:about="&sotis;LearningObject">
+        <rdfs:label>Learning Object</rdfs:label>
+        <rdfs:comment>
+            Root class for all SOTIS educational resources.
+            Inspired by IEEE 1484.12.1 LOM root concept.
+            All subclasses carry LOM General + Educational category properties.
+        </rdfs:comment>
+    </owl:Class>
 
-    <owl:DatatypeProperty rdf:about="lom:version">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>version</rdfs:label>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="lom:status">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>status</rdfs:label>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="lom:contributor">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>contributor</rdfs:label>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="lom:date">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:dateTime"/>
-        <rdfs:label>date</rdfs:label>
-    </owl:DatatypeProperty>
-
-    <owl:ObjectProperty rdf:about="lom:context">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="lom:Context"/>
-        <rdfs:label>educationalContext</rdfs:label>
-    </owl:ObjectProperty>
-
-    <owl:ObjectProperty rdf:about="lom:difficulty">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="lom:Difficulty"/>
-        <rdfs:label>difficultyLevel</rdfs:label>
-    </owl:ObjectProperty>
-
-    <owl:ObjectProperty rdf:about="lom:intendedEndUserRole">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="lom:IntendedEndUserRole"/>
-        <rdfs:label>intendedEndUser</rdfs:label>
-    </owl:ObjectProperty>
-
-    <owl:ObjectProperty rdf:about="lom:learningResourceType">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="lom:LearningResourceType"/>
-        <rdfs:label>learningType</rdfs:label>
-    </owl:ObjectProperty>
-
-    <owl:DatatypeProperty rdf:about="lom:typicalAgeRange">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>typicalAgeRange</rdfs:label>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="lom:typicalLearningTime">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="xsd:string"/>
-        <rdfs:label>typicalLearningTime</rdfs:label>
-    </owl:DatatypeProperty>
-
-    <owl:ObjectProperty rdf:about="lom:partOf">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="lom:LearningObject"/>
-        <rdfs:label>partOf</rdfs:label>
-    </owl:ObjectProperty>
-
-    <owl:ObjectProperty rdf:about="lom:requires">
-        <rdfs:domain rdf:resource="lom:LearningObject"/>
-        <rdfs:range rdf:resource="lom:LearningObject"/>
-        <rdfs:label>requires</rdfs:label>
-    </owl:ObjectProperty>
-
-    <!-- Project-Specific Classes -->
-    <owl:Class rdf:about="KnowledgeGraph">
-        <rdfs:subClassOf rdf:resource="lom:LearningObject"/>
+    <owl:Class rdf:about="&sotis;KnowledgeGraph">
+        <rdfs:subClassOf rdf:resource="&sotis;LearningObject"/>
         <rdfs:label>Knowledge Graph</rdfs:label>
-        <rdfs:comment>Structured representation of knowledge with nodes and relationships.</rdfs:comment>
+        <rdfs:comment>
+            A structured knowledge graph containing nodes and prerequisite relationships.
+            Typed as lom:LearningResourceType = lom:Graph.
+        </rdfs:comment>
     </owl:Class>
 
-    <owl:Class rdf:about="Node">
-        <rdfs:subClassOf rdf:resource="lom:LearningObject"/>
+    <owl:Class rdf:about="&sotis;Node">
+        <rdfs:subClassOf rdf:resource="&sotis;LearningObject"/>
         <rdfs:label>Knowledge Node</rdfs:label>
-        <rdfs:comment>A node in the knowledge graph representing a concept.</rdfs:comment>
+        <rdfs:comment>
+            A single concept or topic within a knowledge graph.
+            Typed as lom:LearningResourceType = lom:Narrative_Text.
+        </rdfs:comment>
     </owl:Class>
 
-    <owl:Class rdf:about="Question">
-        <rdfs:subClassOf rdf:resource="lom:LearningObject"/>
+    <owl:Class rdf:about="&sotis;Question">
+        <rdfs:subClassOf rdf:resource="&sotis;LearningObject"/>
         <rdfs:label>Question</rdfs:label>
-        <rdfs:comment>An assessment question linked to a knowledge node.</rdfs:comment>
+        <rdfs:comment>
+            An assessment question linked to a knowledge node.
+            Typed as lom:LearningResourceType = lom:Questionnaire.
+        </rdfs:comment>
     </owl:Class>
 
-    <owl:Class rdf:about="Test">
-        <rdfs:subClassOf rdf:resource="lom:LearningObject"/>
+    <owl:Class rdf:about="&sotis;Test">
+        <rdfs:subClassOf rdf:resource="&sotis;LearningObject"/>
         <rdfs:label>Test</rdfs:label>
-        <rdfs:comment>A collection of questions for assessment.</rdfs:comment>
+        <rdfs:comment>
+            A collection of questions forming an assessment.
+            Typed as lom:LearningResourceType = lom:Exam.
+        </rdfs:comment>
     </owl:Class>
 
-    <owl:Class rdf:about="TestAttempt">
-        <rdfs:subClassOf rdf:resource="lom:LearningObject"/>
+    <owl:Class rdf:about="&sotis;TestAttempt">
+        <rdfs:subClassOf rdf:resource="&sotis;LearningObject"/>
         <rdfs:label>Test Attempt</rdfs:label>
-        <rdfs:comment>A user's attempt at a test, including answers and score.</rdfs:comment>
+        <rdfs:comment>
+            A learner's attempt at a test, recording answers and score.
+        </rdfs:comment>
     </owl:Class>
 
-    <!-- Essential Vocabulary Individuals -->
-    <owl:NamedIndividual rdf:about="lom:Higher_Education">
-        <rdf:type rdf:resource="lom:Context"/>
-        <rdfs:label>Higher Education</rdfs:label>
-    </owl:NamedIndividual>
+    <owl:Class rdf:about="&sotis;User">
+        <rdfs:label>User</rdfs:label>
+        <rdfs:comment>
+            A system user (student or teacher). Not a LearningObject itself —
+            referenced as contributor via lom:contributor.
+        </rdfs:comment>
+    </owl:Class>
 
-    <owl:NamedIndividual rdf:about="lom:Easy">
-        <rdf:type rdf:resource="lom:Difficulty"/>
+    <owl:Class rdf:about="&sotis;GivenAnswer">
+        <rdfs:label>Given Answer</rdfs:label>
+        <rdfs:comment>
+            Reification class representing a student's answer to a specific question
+            within a TestAttempt. Links the attempt, the question, the answer text,
+            and correctness in a single addressable node.
+            Used via sotis:hasAnswer from TestAttempt.
+        </rdfs:comment>
+    </owl:Class>
+
+    <owl:DatatypeProperty rdf:about="&lom;identifier">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Identifier</rdfs:label>
+        <rdfs:comment>
+            LOM General.Identifier — unique URI string for the resource.
+            Corresponds to dc:identifier. Stored under lom: namespace per codebase convention.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&lom;title">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Title</rdfs:label>
+        <rdfs:comment>
+            LOM General.Title — human-readable name of the resource.
+            Corresponds to dc:title. Also used on sotis:User for the username display.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&lom;description">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Description</rdfs:label>
+        <rdfs:comment>
+            LOM General.Description — textual description of the resource.
+            Corresponds to dc:description. Also holds full question text for Question instances.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&lom;keyword">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Keyword</rdfs:label>
+        <rdfs:comment>
+            LOM General.Keyword — subject keyword(s) for the resource.
+            Corresponds to dc:subject.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&lom;language">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Language</rdfs:label>
+        <rdfs:comment>
+            LOM General.Language — BCP 47 language tag (e.g. "en").
+            Corresponds to dc:language.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <!-- LOM Lifecycle properties -->
+
+    <owl:DatatypeProperty rdf:about="&lom;version">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Version</rdfs:label>
+        <rdfs:comment>LOM Lifecycle.Version — version string (e.g. "1.0").</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&lom;date">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Date</rdfs:label>
+        <rdfs:comment>
+            LOM Lifecycle.Contribute.Date — ISO 8601 date/datetime string.
+            Also used on sotis:TestAttempt as the attempt timestamp.
+            Corresponds to dc:date.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:ObjectProperty rdf:about="&lom;contributor">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&sotis;User"/>
+        <rdfs:label>Contributor</rdfs:label>
+        <rdfs:comment>
+            LOM Lifecycle.Contribute.Entity — the user who created or contributed to the resource.
+            Used for teacher authorship on KnowledgeGraph/Node/Question/Test,
+            and for student identity on TestAttempt.
+            Corresponds to dc:contributor.
+        </rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&lom;status">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&lom;Status"/>
+        <rdfs:label>Status</rdfs:label>
+        <rdfs:comment>LOM Lifecycle.Status — lifecycle status of the resource.</rdfs:comment>
+    </owl:ObjectProperty>
+
+
+    <!-- ============================================================
+         LOM EDUCATIONAL CATEGORY PROPERTIES
+         ============================================================ -->
+
+    <owl:ObjectProperty rdf:about="&lom;learningResourceType">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&lom;LearningResourceType"/>
+        <rdfs:label>Learning Resource Type</rdfs:label>
+        <rdfs:comment>LOM Educational.LearningResourceType (§9.1.1).</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&lom;difficulty">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&lom;Difficulty"/>
+        <rdfs:label>Difficulty</rdfs:label>
+        <rdfs:comment>LOM Educational.Difficulty (§9.1.2).</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&lom;intendedEndUserRole">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&lom;IntendedEndUserRole"/>
+        <rdfs:label>Intended End User Role</rdfs:label>
+        <rdfs:comment>LOM Educational.IntendedEndUserRole (§9.1.4).</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&lom;context">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&lom;Context"/>
+        <rdfs:label>Educational Context</rdfs:label>
+        <rdfs:comment>LOM Educational.Context (§9.1.5).</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:DatatypeProperty rdf:about="&lom;typicalAgeRange">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Typical Age Range</rdfs:label>
+        <rdfs:comment>
+            LOM Educational.TypicalAgeRange (§9.1.7) — e.g. "10-15", "18-".
+            Stored as string (LOM defines this as a free-text range pattern).
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&lom;typicalLearningTime">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Typical Learning Time</rdfs:label>
+        <rdfs:comment>
+            LOM Educational.TypicalLearningTime (§9.1.8) — ISO 8601 duration string,
+            e.g. "PT30M", "PT2H". Stored as xsd:string for pragmatic compatibility;
+            strict LOM uses a structured Duration datatype.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+    <!-- ============================================================
+         LOM RELATION CATEGORY PROPERTIES
+         ============================================================ -->
+
+    <owl:ObjectProperty rdf:about="&lom;partOf">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&sotis;LearningObject"/>
+        <rdfs:label>Part Of</rdfs:label>
+        <rdfs:comment>
+            LOM Relation — this resource is a part of the referenced resource.
+            e.g. Node partOf KnowledgeGraph, Question partOf Node, Test partOf KnowledgeGraph.
+        </rdfs:comment>
+        <owl:inverseOf rdf:resource="&sotis;hasPart"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&lom;requires">
+        <rdfs:domain rdf:resource="&sotis;Node"/>
+        <rdfs:range rdf:resource="&sotis;Node"/>
+        <rdfs:label>Requires</rdfs:label>
+        <rdfs:comment>
+            LOM Relation — prerequisite relationship between knowledge nodes.
+            "This node requires that node to be mastered first."
+        </rdfs:comment>
+    </owl:ObjectProperty>
+
+
+    <!-- ============================================================
+         SOTIS EXTENSION PROPERTIES
+         (project-specific, not in LOM)
+         ============================================================ -->
+
+    <owl:ObjectProperty rdf:about="&sotis;hasPart">
+        <rdfs:domain rdf:resource="&sotis;LearningObject"/>
+        <rdfs:range rdf:resource="&sotis;LearningObject"/>
+        <rdfs:label>Has Part</rdfs:label>
+        <rdfs:comment>Inverse of lom:partOf.</rdfs:comment>
+        <owl:inverseOf rdf:resource="&lom;partOf"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&sotis;hasQuestion">
+        <rdfs:domain rdf:resource="&sotis;Test"/>
+        <rdfs:range rdf:resource="&sotis;Question"/>
+        <rdfs:label>Has Question</rdfs:label>
+        <rdfs:comment>Links a Test to the Questions it contains.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&sotis;hasAnswer">
+        <rdfs:domain rdf:resource="&sotis;TestAttempt"/>
+        <rdfs:range rdf:resource="&sotis;GivenAnswer"/>
+        <rdfs:label>Has Answer</rdfs:label>
+        <rdfs:comment>
+            Links a TestAttempt to each GivenAnswer node.
+            A TestAttempt has one GivenAnswer per question answered.
+        </rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="&sotis;question">
+        <rdfs:domain rdf:resource="&sotis;GivenAnswer"/>
+        <rdfs:range rdf:resource="&sotis;Question"/>
+        <rdfs:label>Question</rdfs:label>
+        <rdfs:comment>The Question that this GivenAnswer responds to.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:DatatypeProperty rdf:about="&sotis;answer">
+        <rdfs:domain rdf:resource="&sotis;GivenAnswer"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Answer Text</rdfs:label>
+        <rdfs:comment>The text of the student's chosen answer.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&sotis;isCorrect">
+        <rdfs:domain rdf:resource="&sotis;GivenAnswer"/>
+        <rdfs:range rdf:resource="&xsd;boolean"/>
+        <rdfs:label>Is Correct</rdfs:label>
+        <rdfs:comment>
+            Whether the student's answer was correct.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&sotis;correctAnswer">
+        <rdfs:domain rdf:resource="&sotis;Question"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Correct Answer</rdfs:label>
+        <rdfs:comment>The correct answer string for this question.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&sotis;otherAnswers">
+        <rdfs:domain rdf:resource="&sotis;Question"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:label>Other Answers</rdfs:label>
+        <rdfs:comment>Comma-separated list of incorrect (distractor) answers.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="&sotis;score">
+        <rdfs:domain rdf:resource="&sotis;TestAttempt"/>
+        <rdfs:range rdf:resource="&xsd;float"/>
+        <rdfs:label>Score</rdfs:label>
+        <rdfs:comment>
+            Percentage score for a TestAttempt (0.0–100.0).
+            Stored as xsd:float.
+        </rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:NamedIndividual rdf:about="&lom;Easy">
+        <rdf:type rdf:resource="&lom;Difficulty"/>
         <rdfs:label>Easy</rdfs:label>
+        <rdfs:comment>LOM Educational.Difficulty = "easy" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Medium">
-        <rdf:type rdf:resource="lom:Difficulty"/>
+    <owl:NamedIndividual rdf:about="&lom;Medium">
+        <rdf:type rdf:resource="&lom;Difficulty"/>
         <rdfs:label>Medium</rdfs:label>
+        <rdfs:comment>LOM Educational.Difficulty = "medium" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Difficult">
-        <rdf:type rdf:resource="lom:Difficulty"/>
+    <owl:NamedIndividual rdf:about="&lom;Difficult">
+        <rdf:type rdf:resource="&lom;Difficulty"/>
         <rdfs:label>Difficult</rdfs:label>
+        <rdfs:comment>LOM Educational.Difficulty = "difficult" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Teacher">
-        <rdf:type rdf:resource="lom:IntendedEndUserRole"/>
-        <rdfs:label>Teacher</rdfs:label>
+    <owl:NamedIndividual rdf:about="&lom;School">
+        <rdf:type rdf:resource="&lom;Context"/>
+        <rdfs:label>School</rdfs:label>
+        <rdfs:comment>LOM Educational.Context = "school" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Student">
-        <rdf:type rdf:resource="lom:IntendedEndUserRole"/>
+    <owl:NamedIndividual rdf:about="&lom;Higher_Education">
+        <rdf:type rdf:resource="&lom;Context"/>
+        <rdfs:label>Higher Education</rdfs:label>
+        <rdfs:comment>LOM Educational.Context = "higher education" (IEEE 1484.12.1).</rdfs:comment>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="&lom;Student">
+        <rdf:type rdf:resource="&lom;IntendedEndUserRole"/>
         <rdfs:label>Student</rdfs:label>
+        <rdfs:comment>LOM Educational.IntendedEndUserRole = "learner" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Expert">
-        <rdf:type rdf:resource="lom:IntendedEndUserRole"/>
-        <rdfs:label>Expert</rdfs:label>
+    <owl:NamedIndividual rdf:about="&lom;Teacher">
+        <rdf:type rdf:resource="&lom;IntendedEndUserRole"/>
+        <rdfs:label>Teacher</rdfs:label>
+        <rdfs:comment>LOM Educational.IntendedEndUserRole = "teacher" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Graph">
-        <rdf:type rdf:resource="lom:LearningResourceType"/>
+    <owl:NamedIndividual rdf:about="&lom;Graph">
+        <rdf:type rdf:resource="&lom;LearningResourceType"/>
         <rdfs:label>Graph</rdfs:label>
+        <rdfs:comment>Custom LearningResourceType for KnowledgeGraph instances.</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Questionnaire">
-        <rdf:type rdf:resource="lom:LearningResourceType"/>
+    <owl:NamedIndividual rdf:about="&lom;Questionnaire">
+        <rdf:type rdf:resource="&lom;LearningResourceType"/>
         <rdfs:label>Questionnaire</rdfs:label>
+        <rdfs:comment>LOM Educational.LearningResourceType = "questionnaire" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Exam">
-        <rdf:type rdf:resource="lom:LearningResourceType"/>
-        <rdfs:label>Exam</rdfs:label>
+    <owl:NamedIndividual rdf:about="&lom;Narrative_Text">
+        <rdf:type rdf:resource="&lom;LearningResourceType"/>
+        <rdfs:label>Narrative Text</rdfs:label>
+        <rdfs:comment>LOM Educational.LearningResourceType = "narrative text" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
 
-    <owl:NamedIndividual rdf:about="lom:Final">
-        <rdf:type rdf:resource="lom:Status"/>
+    <owl:NamedIndividual rdf:about="&lom;Final">
+        <rdf:type rdf:resource="&lom;Status"/>
         <rdfs:label>Final</rdfs:label>
+        <rdfs:comment>LOM Lifecycle.Status = "final" (IEEE 1484.12.1).</rdfs:comment>
     </owl:NamedIndividual>
+
 </rdf:RDF>

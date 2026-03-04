@@ -20,7 +20,7 @@ class StudentOverallAverageView(APIView):
         user_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT 
@@ -61,7 +61,7 @@ class StudentRecentTestsView(APIView):
         user_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?testTitle ?score ?dateRaw
@@ -111,7 +111,7 @@ class StudentTopicMasteryView(APIView):
         user_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?topic ?questions ?correct ?performance
@@ -160,7 +160,7 @@ class StudentFrequentlyWrongView(APIView):
         user_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?topic ?total ?wrong ?errorRate
@@ -208,7 +208,7 @@ class StudentRankingView(APIView):
     """
     def get(self, request):
         query = """
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?student ?studentName (AVG(?score) AS ?avgScore)
@@ -259,7 +259,7 @@ class StudentRecommendationsView(APIView):
         user_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?topic ?mastery ?questions
@@ -310,7 +310,7 @@ class ClassAveragePerTestView(APIView):
         teacher_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?testTitle ?participants ?averageScore
@@ -357,7 +357,7 @@ class ClassHardestQuestionsView(APIView):
         teacher_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
@@ -414,7 +414,7 @@ class StudentsNeedingHelpView(APIView):
         threshold_percent = float(request.query_params.get('threshold', 60))
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?studentName ?avgScore ?testsTaken
@@ -463,7 +463,7 @@ class ClassTopicMasteryView(APIView):
         teacher_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?topic ?questionsAnswered ?classMastery
@@ -512,7 +512,7 @@ class TestParticipationView(APIView):
         teacher_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
 
         SELECT ?testTitle ?participants
@@ -556,7 +556,7 @@ class MostImprovedStudentsView(APIView):
         teacher_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
@@ -634,7 +634,7 @@ class ClassPrerequisiteViolationsView(APIView):
         min_students = int(request.query_params.get('min_students', 3))
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 

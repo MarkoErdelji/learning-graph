@@ -7,7 +7,7 @@ from app.utils import execute_update
 
 SOTIS_GRAPH = 'http://example.com/sotis/graph'
 SOTIS_NS = 'http://example.com/sotis#'
-LOM_NS = 'http://ltsc.ieee.org/xsd/LOM#'
+LOM_NS = 'http://ltsc.ieee.org/xsd/LOM/'
 
 AppUser = get_user_model()
 
@@ -325,7 +325,7 @@ class Command(BaseCommand):
             PREFIX sotis: <{SOTIS_NS}>
             INSERT DATA {{
                 GRAPH <{SOTIS_GRAPH}> {{
-                    <{test1a_uri}> lom:hasQuestion <{question.uri}> .
+                    <{test1a_uri}> sotis:hasQuestion <{question.uri}> .
                 }}
             }}
             """
@@ -337,7 +337,7 @@ class Command(BaseCommand):
             PREFIX sotis: <{SOTIS_NS}>
             INSERT DATA {{
                 GRAPH <{SOTIS_GRAPH}> {{
-                    <{test1b_uri}> lom:hasQuestion <{question.uri}> .
+                    <{test1b_uri}> sotis:hasQuestion <{question.uri}> .
                 }}
             }}
             """
@@ -701,7 +701,7 @@ class Command(BaseCommand):
             PREFIX sotis: <{SOTIS_NS}>
             INSERT DATA {{
                 GRAPH <{SOTIS_GRAPH}> {{
-                    <{test2a_uri}> lom:hasQuestion <{question.uri}> .
+                    <{test2a_uri}> sotis:hasQuestion <{question.uri}> .
                 }}
             }}
             """
@@ -713,7 +713,7 @@ class Command(BaseCommand):
             PREFIX sotis: <{SOTIS_NS}>
             INSERT DATA {{
                 GRAPH <{SOTIS_GRAPH}> {{
-                    <{test2b_uri}> lom:hasQuestion <{question.uri}> .
+                    <{test2b_uri}> sotis:hasQuestion <{question.uri}> .
                 }}
             }}
             """
@@ -1079,7 +1079,7 @@ class Command(BaseCommand):
             PREFIX sotis: <{SOTIS_NS}>
             INSERT DATA {{
                 GRAPH <{SOTIS_GRAPH}> {{
-                    <{test3a_uri}> lom:hasQuestion <{question.uri}> .
+                    <{test3a_uri}> sotis:hasQuestion <{question.uri}> .
                 }}
             }}
             """
@@ -1091,7 +1091,7 @@ class Command(BaseCommand):
             PREFIX sotis: <{SOTIS_NS}>
             INSERT DATA {{
                 GRAPH <{SOTIS_GRAPH}> {{
-                    <{test3b_uri}> lom:hasQuestion <{question.uri}> .
+                    <{test3b_uri}> sotis:hasQuestion <{question.uri}> .
                 }}
             }}
             """

@@ -1175,7 +1175,7 @@ class StudentOverallAverageView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT (AVG(?score) AS ?avgScore) (COUNT(?attempt) AS ?totalAttempts)
         WHERE {{
@@ -1201,7 +1201,7 @@ class StudentProgressOverTimeView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?testTitle ?date ?desc
         WHERE {{
@@ -1234,7 +1234,7 @@ class StudentTopicMasteryView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?nodeTitle (AVG(?correctFloat) AS ?avgScore) (COUNT(?q) AS ?questionsAttempted)
         WHERE {{
@@ -1268,7 +1268,7 @@ class StudentFrequentlyWrongView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?questionText (COUNT(?wrong) AS ?wrongCount)
         WHERE {{
@@ -1302,7 +1302,7 @@ class StudentRankingView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?studentName (AVG(?score) AS ?avgScore)
         WHERE {{
@@ -1341,7 +1341,7 @@ class StudentRecommendationsView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?nodeTitle (AVG(?correct) AS ?mastery)
         WHERE {{
@@ -1376,7 +1376,7 @@ class StudentCompletionRateView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT (COUNT(?completed) AS ?done) (COUNT(?all) AS ?total)
         WHERE {{
@@ -1403,7 +1403,7 @@ class StudentRecentTestsView(APIView):
     def get(self, request):
         user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?testTitle ?date ?desc
         WHERE {{
@@ -1439,7 +1439,7 @@ class StudentRecentTestsView(APIView):
 class ClassAveragePerTestView(APIView):
     def get(self, request):
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?testTitle (AVG(?score) AS ?avgScore) (COUNT(?attempt) AS ?participants)
         WHERE {{
@@ -1469,7 +1469,7 @@ class ClassAveragePerTestView(APIView):
 class ClassHardestQuestionsView(APIView):
     def get(self, request):
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?questionText (COUNT(?wrong) AS ?wrongCount) (COUNT(?total) AS ?attempted)
         WHERE {{
@@ -1505,7 +1505,7 @@ class ClassHardestQuestionsView(APIView):
 class StudentsNeedingHelpView(APIView):
     def get(self, request):
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?studentName (AVG(?score) AS ?avgScore) (COUNT(?attempt) AS ?tests)
         WHERE {{
@@ -1537,7 +1537,7 @@ class StudentsNeedingHelpView(APIView):
 class ClassTopicMasteryView(APIView):
     def get(self, request):
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?nodeTitle (AVG(?correct) AS ?classMastery)
         WHERE {{
@@ -1568,7 +1568,7 @@ class ClassTopicMasteryView(APIView):
 class TestParticipationView(APIView):
     def get(self, request):
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?testTitle (COUNT(?attempt) AS ?participants)
         WHERE {{
@@ -1597,7 +1597,7 @@ class MostImprovedStudentsView(APIView):
         teacher_uri = f"<http://example.com/sotis#user/{request.user.username}>"
 
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
@@ -1678,7 +1678,7 @@ class DiscriminatingQuestionsView(APIView):
 
     def get(self, request):
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?questionText (AVG(?correct) AS ?pValue)
         WHERE {{
@@ -1711,7 +1711,7 @@ class ClassScoreDistributionView(APIView):
 
     def get(self, request):
         query = f"""
-        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
+        PREFIX lom: <http://ltsc.ieee.org/xsd/LOM/>
         PREFIX sotis: <http://example.com/sotis#>
         SELECT ?desc
         WHERE {{

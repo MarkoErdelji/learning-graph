@@ -15,7 +15,7 @@ VIRTUOSO_PORT = os.getenv('VIRTUOSO_PORT', '8890')
 VIRTUOSO_SPARQL_ENDPOINT = 'http://localhost:8890/sparql-auth'
 SOTIS_GRAPH = 'http://example.com/sotis/graph'
 SOTIS_NS = 'http://example.com/sotis#'
-LOM_NS = 'http://ltsc.ieee.org/xsd/LOM#'
+LOM_NS = 'http://ltsc.ieee.org/xsd/LOM/'
 
 LOGGING = {
     'version': 1,
