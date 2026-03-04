@@ -65,7 +65,7 @@ class KnowledgeGraphViewSet(viewsets.ViewSet):
         graph_id = str(uuid.uuid4())
         graph_uri = f"{SOTIS_NS}kg/{graph_id}"
         instance = serializer.save(id=graph_id, uri=graph_uri, author=request.user)
-        user_uri = f"{SOTIS_NS}user/{request.user.id}"
+        user_uri = f"{SOTIS_NS}user/{request.user.username}"
         query = f"""
         PREFIX lom: <{LOM_NS}>
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -174,7 +174,7 @@ class GraphNodeViewSet(viewsets.ViewSet):
                              lom:keyword "{instance.keyword}" ;
                              lom:version "{instance.version}" ;
                              lom:status "{instance.status}" ;
-                             lom:contributor <{SOTIS_NS}user/{request.user.id}> ;
+                             lom:contributor <{SOTIS_NS}user/{request.user.username}> ;
                              lom:date "{datetime.datetime.now().isoformat()}" ;
                              lom:difficulty {instance.difficulty} ;
                              lom:context {instance.context} ;
@@ -217,7 +217,7 @@ class GraphNodeViewSet(viewsets.ViewSet):
                                      lom:keyword "{instance.keyword}" ;
                                      lom:version "{instance.version}" ;
                                      lom:status "{instance.status}" ;
-                                     lom:contributor <{SOTIS_NS}user/{request.user.id}> ;
+                                     lom:contributor <{SOTIS_NS}user/{request.user.username}> ;
                                      lom:date "{datetime.datetime.now().isoformat()}" ;
                                      lom:difficulty {instance.difficulty} ;
                                      lom:context {instance.context} ;
@@ -366,7 +366,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                                  lom:partOf <{instance.node_uri}> ;
                                  lom:version "{instance.version}" ;
                                  lom:status "{instance.status}" ;
-                                 lom:contributor <{SOTIS_NS}user/{self.request.user.id}> ;
+                                 lom:contributor <{SOTIS_NS}user/{self.request.user.username}> ;
                                  lom:date "{datetime.datetime.now().isoformat()}" ;
                                  lom:difficulty {instance.difficulty} ;
                                  lom:context {instance.context} ;
@@ -406,7 +406,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                                  lom:partOf <{instance.node_uri}> ;
                                  lom:version "{instance.version}" ;
                                  lom:status "{instance.status}" ;
-                                 lom:contributor <{SOTIS_NS}user/{self.request.user.id}> ;
+                                 lom:contributor <{SOTIS_NS}user/{self.request.user.username}> ;
                                  lom:date "{datetime.datetime.now().isoformat()}" ;
                                  lom:difficulty {instance.difficulty} ;
                                  lom:context {instance.context} ;
@@ -458,7 +458,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                                      lom:partOf <{instance.node_uri}> ;
                                      lom:version "{instance.version}" ;
                                      lom:status "{instance.status}" ;
-                                     lom:contributor <{SOTIS_NS}user/{self.request.user.id}> ;
+                                     lom:contributor <{SOTIS_NS}user/{self.request.user.username}> ;
                                      lom:date "{datetime.datetime.now().isoformat()}" ;
                                      lom:difficulty {instance.difficulty} ;
                                      lom:context {instance.context} ;
@@ -627,7 +627,7 @@ class TestCreationView(APIView):
             for idx, (question, _) in enumerate(sorted_questions):
                 TestQuestion.objects.create(test=test, question=question, order=idx)
                 insert_parts.append(f"<{test.uri}> lom:partOf <{question.uri}> .")
-            user_uri = f"{SOTIS_NS}user/{request.user.id}"
+            user_uri = f"{SOTIS_NS}user/{request.user.username}"
             query_test = f"""
             PREFIX lom: <{LOM_NS}>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -712,26 +712,53 @@ class TestAttemptView(APIView):
                 "answers": test_attempt.answers,
                 "score": test_attempt.score
             })
-            student_uri = f"{SOTIS_NS}user/{request.user.id}"
+            student_uri = f"<http://example.com/sotis#user/{request.user.username}>"
+
             query_attempt = f"""
             PREFIX lom: <{LOM_NS}>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
             PREFIX sotis: <{SOTIS_NS}>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
             INSERT DATA {{
                 GRAPH <{SOTIS_GRAPH}> {{
                     <{test_attempt.uri}> rdf:type sotis:TestAttempt ;
-                                         lom:identifier "{test_attempt.uri}" ;
-                                         lom:partOf <{test.uri}> ;
-                                         lom:contributor <{student_uri}> ;
-                                         lom:description '{attempt_data}' ;
-                                         lom:language "{test_attempt.language}" ;
-                                         lom:version "{test_attempt.version}" ;
-                                         lom:status "{test_attempt.status}" ;
-                                         lom:date "{datetime.datetime.now().isoformat()}" .
+                                        lom:identifier "{test_attempt.uri}" ;
+                                        lom:partOf <{test.uri}> ;
+                                        lom:contributor {student_uri} ;
+                                        lom:description '{attempt_data}' ;
+                                        lom:language "{test_attempt.language}" ;
+                                        lom:version "{test_attempt.version}" ;
+                                        lom:status "{test_attempt.status}" ;
+                                        lom:date "{datetime.datetime.now().isoformat()}"^^xsd:dateTime ;
+                                        sotis:score "{test_attempt.score}"^^xsd:float .   # ← THIS WAS MISSING
                 }}
             }}
             """
             execute_update(query_attempt)
+
+            # === ADD THIS BLOCK (this is what the seed had) ===
+            for qid, answer in submitted_answers.items():
+                try:
+                    tq = test.testquestion_set.get(question__id=qid)
+                    question = tq.question
+                    is_correct = "true" if str(answer) == str(question.correct_answer) else "false"
+                    query_answer = f"""
+                    PREFIX sotis: <{SOTIS_NS}>
+                    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                    INSERT DATA {{
+                        GRAPH <{SOTIS_GRAPH}> {{
+                            <{test_attempt.uri}> sotis:hasAnswer [
+                                sotis:question <{question.uri}> ;
+                                sotis:answer "{answer}" ;
+                                sotis:isCorrect "{is_correct}"^^xsd:boolean
+                            ] .
+                        }}
+                    }}
+                    """
+                    execute_update(query_answer)
+                except:
+                    pass
             logger.debug(f"Created test attempt with URI: {test_attempt.uri}")
             correct_answers = {}
             for test_question in test.testquestion_set.select_related('question'):
@@ -805,7 +832,7 @@ class TestAttemptsView(APIView):
                 "answers": test_attempt.answers,
                 "score": test_attempt.score
             })
-            student_uri = f"{SOTIS_NS}user/{request.user.id}"
+            student_uri = f"{SOTIS_NS}user/{request.user.username}"
             query_attempt = f"""
             PREFIX lom: <{LOM_NS}>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -1146,7 +1173,7 @@ class DownloadIQTFormView(APIView):
 
 class StudentOverallAverageView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1172,7 +1199,7 @@ class StudentOverallAverageView(APIView):
 
 class StudentProgressOverTimeView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1205,7 +1232,7 @@ class StudentProgressOverTimeView(APIView):
 
 class StudentTopicMasteryView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1239,7 +1266,7 @@ class StudentTopicMasteryView(APIView):
 
 class StudentFrequentlyWrongView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1273,7 +1300,7 @@ class StudentFrequentlyWrongView(APIView):
 
 class StudentRankingView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1299,7 +1326,7 @@ class StudentRankingView(APIView):
             name = b["studentName"]["value"]
             score = round(float(b["avgScore"]["value"]), 1)
             ranked.append({"rank": i, "name": name, "score": score})
-            if request.user.username in name or str(request.user.id) in name:
+            if request.user.username in name or str(request.user.username) in name:
                 my_rank = i
                 my_score = score
         return Response({
@@ -1312,7 +1339,7 @@ class StudentRankingView(APIView):
 
 class StudentRecommendationsView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1347,7 +1374,7 @@ class StudentRecommendationsView(APIView):
 
 class StudentCompletionRateView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1374,7 +1401,7 @@ class StudentCompletionRateView(APIView):
 
 class StudentRecentTestsView(APIView):
     def get(self, request):
-        user_uri = f"http://example.com/sotis/user/{request.user.id}"
+        user_uri = f"http://example.com/sotis/user/{request.user.username}"
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
@@ -1563,46 +1590,88 @@ class TestParticipationView(APIView):
         ]
         return Response(data)
 
-
 class MostImprovedStudentsView(APIView):
+    permission_classes = [IsTeacher]
 
     def get(self, request):
+        teacher_uri = f"<http://example.com/sotis#user/{request.user.username}>"
+
         query = f"""
         PREFIX lom: <http://ltsc.ieee.org/xsd/LOM#>
         PREFIX sotis: <http://example.com/sotis#>
-        SELECT ?studentName ?date ?desc
-        WHERE {{
-          GRAPH <http://example.com/sotis/graph> {{
-            ?attempt lom:contributor ?student ;
-                     lom:description ?desc ;
-                     lom:date ?date .
-            ?student lom:title ?studentName .
-          }}
-        }}
-        ORDER BY ?studentName ?date
-        """
-        results = execute_select(query)
-        students = {}
-        for b in results["results"]["bindings"]:
-            name = b["studentName"]["value"]
-            match = re.search(r"Score: (\d+\.?\d*)", b["desc"]["value"])
-            score = float(match.group(1)) if match else 0
-            if name not in students:
-                students[name] = []
-            students[name].append(score)
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-        improved = []
-        for name, scores in students.items():
-            if len(scores) >= 2:
-                improvement = scores[-1] - scores[0]
-                if improvement > 5:
-                    improved.append({
-                        "student": name,
-                        "first_score": round(scores[0], 1),
-                        "latest_score": round(scores[-1], 1),
-                        "improvement": round(improvement, 1)
-                    })
-        return Response(sorted(improved, key=lambda x: x["improvement"], reverse=True)[:10])
+        SELECT ?student ?studentName ?latestDate ?latestScore ?prevDate ?prevScore
+        WHERE {{
+            {{
+                SELECT ?student ?date ?score
+                WHERE {{
+                    GRAPH <http://example.com/sotis/graph> {{
+                        ?test lom:contributor {teacher_uri} .
+                        ?attempt a sotis:TestAttempt ;
+                                 lom:contributor ?student ;
+                                 lom:partOf ?test ;
+                                 sotis:score ?score ;
+                                 lom:date ?date .
+                    }}
+                }}
+                ORDER BY DESC(?date)
+                LIMIT 2
+            }}
+
+            BIND(?date AS ?latestDate)
+            BIND(?score AS ?latestScore)
+
+            {{
+                SELECT ?student ?date ?score
+                WHERE {{
+                    GRAPH <http://example.com/sotis/graph> {{
+                        ?test lom:contributor {teacher_uri} .
+                        ?attempt a sotis:TestAttempt ;
+                                 lom:contributor ?student ;
+                                 lom:partOf ?test ;
+                                 sotis:score ?score ;
+                                 lom:date ?date .
+                    }}
+                }}
+                ORDER BY DESC(?date)
+                OFFSET 1
+                LIMIT 1
+            }}
+            BIND(?date AS ?prevDate)
+            BIND(?score AS ?prevScore)
+
+            GRAPH <http://example.com/sotis/graph> {{
+                ?student lom:title ?studentName .
+            }}
+
+            FILTER(BOUND(?latestScore) && BOUND(?prevScore))
+            FILTER(?latestScore > ?prevScore)
+        }}
+        ORDER BY DESC(?latestScore - ?prevScore)
+        LIMIT 10
+        """
+
+        results = execute_select(query)
+
+        data = []
+        for b in results["results"]["bindings"]:
+            latest_dt = datetime.datetime.fromisoformat(b["latestDate"]["value"])
+            prev_dt   = datetime.datetime.fromisoformat(b["prevDate"]["value"])
+
+            improvement = float(b["latestScore"]["value"]) - float(b["prevScore"]["value"])
+
+            data.append({
+                "student": b["studentName"]["value"],
+                "previous_attempt_date": prev_dt.strftime("%Y-%m-%d"),
+                "latest_attempt_date": latest_dt.strftime("%Y-%m-%d"),
+                "previous_score": round(float(b["prevScore"]["value"]), 1),
+                "latest_score": round(float(b["latestScore"]["value"]), 1),
+                "improvement": round(improvement, 1),
+                "days_between_attempts": (latest_dt - prev_dt).days
+            })
+
+        return Response(data)
 
 
 class DiscriminatingQuestionsView(APIView):

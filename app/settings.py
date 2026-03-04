@@ -106,7 +106,7 @@ DATABASES = {
         'USER': os.environ.get('POSTGRES_USER', 'user'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'password'),
         'HOST': 'localhost',  # Docker service name for PostgreSQL
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 

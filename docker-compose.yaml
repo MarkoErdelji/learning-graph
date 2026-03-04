@@ -1,34 +1,42 @@
-version: '3'
+version: '3.9'
 
 services:
-  my-postgres:
-    image: postgres
+  postgres:
+    image: postgres:16-alpine
+    restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: database
     ports:
-      - "5432:5432"
+      - "5433:5432"               # Host: 5433 → Container: 5432 (avoid conflict)
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   virtuoso:
     image: openlink/virtuoso-opensource-7:latest
+    restart: always
     environment:
       - DBA_PASSWORD=dba
       - SPARQL_UPDATE=true
-      - DEFAULT_GRAPH=http://example.com/sotis
+      - DEFAULT_GRAPH=http://example.com/sotis/graph
     ports:
       - "8890:8890"
     volumes:
       - virtuoso_data:/data
-      - ./virtuoso.ini:/data/virtuoso.ini
+      - ./virtuoso.ini:/data/virtuoso.ini:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8890/sparql"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
-  postgres_data:
+  pgdata:
   virtuoso_data:
